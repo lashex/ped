@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+  <xs:element name="sunSpecData">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="d" type="DeviceRecord" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+      <xs:attribute name="v" type="xs:string" default="1"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="DeviceRecord">
+    <xs:sequence>
+      <xs:element name="m" type="Model" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="lid" type="xs:string" />
+    <xs:attribute name="ns"  type="xs:string" default="mac" />
+    <xs:attribute name="id"  type="xs:string" />
+    <xs:attribute name="if"  type="xs:string" default="0" />
+    <xs:attribute name="man" type="xs:string" />
+    <xs:attribute name="mod" type="xs:string" />
+    <xs:attribute name="sn"  type="xs:string" />
+    <xs:attribute name="t"   type="xs:string" />    <!-- IETF RFC-3339 timestamps -->
+    <xs:attribute name="cid" type="xs:string" />
+  </xs:complexType>
+
+  <xs:complexType name="Model">
+    <xs:sequence>
+      <xs:element name="p" type="Point" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="id"  type="xs:string" use="required" />
+    <xs:attribute name="ns"  type="xs:string" />
+    <xs:attribute name="x"   type="xs:string"/>    <!-- model index -->
+  </xs:complexType>
+
+  <xs:complexType name="Point">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="id" type="xs:string" use="required" />
+        <xs:attribute name="x"  type="xs:string" default="1"/>                  <!-- point index -->
+        <xs:attribute name="sf" type="xs:string" default="0" />                  
+        <xs:attribute name="u"  type="xs:string" />
+        <xs:attribute name="d"  type="xs:string" />
+        <xs:attribute name="t"  type="xs:string" /> <!-- IEEE RFC-3339 timestamps -->
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+</xs:schema>

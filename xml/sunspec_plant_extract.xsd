@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+           elementFormDefault="unqualified">
+ 
+ <xs:include schemaLocation="sunspec_data.xsd"/>
+
+ <xs:element name="sunSpecPlantExtract">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="plant"             type="Plant" />
+      <xs:element ref="sunSpecData"        minOccurs="0" />
+      <xs:element name="sunSpecMetadata"   type="SunSpecMetadata" minOccurs="0" />
+      <xs:element name="strings"           type="Strings"         minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="extractExtensions" type="Extensions"      minOccurs="0" />
+    </xs:sequence>
+    <xs:attribute name="t"         type="xs:string" use="required" /> <!-- IETF RFC-3339 timestamps -->
+    <xs:attribute name="seqId"     type="xs:string" /> 
+    <xs:attribute name="lastSeqId" type="xs:string" /> 
+    <xs:attribute name="v"         type="xs:string" default="1" /> 
+  </xs:complexType>
+ </xs:element>
+
+
+ <!-- PLANT -->
+ <xs:complexType name="Plant">
+  <xs:sequence>
+    <xs:group ref="Info" />
+    <xs:element name="activationDate" type="xs:string"    minOccurs="0" />
+    <xs:element name="location"       type="Location"     minOccurs="0" />
+    <xs:element name="namePlate"      type="NamePlate"    minOccurs="0" />
+    <xs:element name="capabilities"   type="Capabilities" minOccurs="0" />
+    <xs:element name="participant"    type="Participant"  minOccurs="0" maxOccurs="unbounded" />
+  </xs:sequence>
+  <xs:attribute name="id"     type="xs:string" use="required" /> <!-- IETF RFC-3339 timestamps -->
+  <xs:attribute name="v"      type="xs:string" default="1" /> 
+  <xs:attribute name="locale" type="xs:string" default="en" />  <!-- BCP 47 - RFC 5646 -->
+ </xs:complexType>
+
+ <xs:complexType name="Location">
+  <xs:sequence>
+    <xs:element name="latitude"      type="xs:string" minOccurs="0" />
+    <xs:element name="longitude"     type="xs:string" minOccurs="0" />
+    <xs:element name="line1"         type="xs:string" minOccurs="0" />
+    <xs:element name="line2"         type="xs:string" minOccurs="0" />
+    <xs:element name="city"          type="xs:string" minOccurs="0" />
+    <xs:element name="stateProvince" type="xs:string" minOccurs="0" />
+    <xs:element name="country"       type="xs:string" minOccurs="0" />
+    <xs:element name="postal"        type="xs:string" minOccurs="0" />
+    <xs:element name="elevation"     type="xs:string" minOccurs="0" />
+    <xs:element name="timezone"      type="xs:string" minOccurs="0" /> <!-- GMT offset -->
+    <xs:element name="property"      type="Property"  minOccurs="0" maxOccurs="unbounded" /> <!-- GMT offset -->
+  </xs:sequence>
+ </xs:complexType>
+
+ <xs:complexType name="NamePlate">
+  <xs:sequence>
+    <xs:element name="property" type="Property" minOccurs="0" maxOccurs="unbounded" />
+  </xs:sequence>
+ </xs:complexType>    
+
+ <xs:complexType name="Capabilities">
+  <xs:sequence>
+    <xs:element name="property" type="Property" minOccurs="0" maxOccurs="unbounded" />
+  </xs:sequence>
+ </xs:complexType>    
+
+ <xs:complexType name="Participant">
+  <xs:sequence>
+    <xs:element name="property" type="Property" minOccurs="0" maxOccurs="unbounded" />
+  </xs:sequence>
+  <xs:attribute name="type" type="xs:string" use="required" />
+ </xs:complexType>    
+
+
+ <!-- SUNSPEC META DATA -->
+ <xs:complexType name="SunSpecMetadata">
+  <xs:sequence>
+    <xs:element name="d" type="DeviceRecordMetadata" minOccurs="0" maxOccurs="unbounded" />
+  </xs:sequence>
+ </xs:complexType> 
+
+ <!-- The SunSpec DATA schema, modified for metadata and localisation -->
+  <xs:complexType name="DeviceRecordMetadata">
+    <xs:sequence>
+      <xs:group ref="Info" />
+      <xs:element name="property" type="Property"      minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="m"        type="ModelMetadata" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="lid" type="xs:string" />
+    <xs:attribute name="ns"  type="xs:string" default="mac" />
+    <xs:attribute name="id"  type="xs:string" />
+    <xs:attribute name="if"  type="xs:string" default="0" />
+    <xs:attribute name="man" type="xs:string" />
+    <xs:attribute name="mod" type="xs:string" />
+    <xs:attribute name="sn"  type="xs:string" />
+  </xs:complexType>
+
+  <xs:complexType name="ModelMetadata">
+    <xs:sequence>
+      <xs:group ref="Info" />
+      <xs:element name="property" type="Property"      minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="p"        type="PointMetadata" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:string" use="required" />
+    <xs:attribute name="ns" type="xs:string" />
+    <xs:attribute name="x"  type="xs:string"/>    <!-- model index -->
+  </xs:complexType>
+
+  <xs:complexType name="PointMetadata">
+    <xs:sequence>
+      <xs:group ref="Info" />
+      <xs:element name="property" type="Property" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:string" use="required" />
+    <xs:attribute name="x"  type="xs:string" default="1"/>  <!-- point index -->
+  </xs:complexType>
+
+
+ <!-- STRINGS -->
+ <xs:complexType name="Strings">
+  <xs:sequence>
+    <xs:element name="plant"           type="StringsPlant"    minOccurs="0" />
+    <xs:element name="sunSpecMetadata" type="SunSpecMetadata" minOccurs="0" />
+  </xs:sequence>
+  <xs:attribute name="locale" type="xs:string" use="required" /> <!-- BCP 47 - RFC 5646 -->
+ </xs:complexType> 
+
+ <xs:complexType name="StringsPlant"> <!-- The localisable parts of plant -->
+  <xs:sequence>
+    <xs:group ref="Info" />
+    <xs:element name="participant" type="Participant" minOccurs="0" maxOccurs="unbounded" />
+  </xs:sequence>
+ </xs:complexType>
+
+
+ <!-- EXTENSIONS -->
+ <xs:complexType name="Extensions">
+  <xs:sequence>
+    <xs:element name="extension" type="Extension" maxOccurs="unbounded" />
+  </xs:sequence>
+ </xs:complexType> 
+
+ <xs:complexType name="Extension">
+  <xs:sequence>
+    <xs:any namespace="##other" processContents="lax" maxOccurs="unbounded" />
+  </xs:sequence>
+  <xs:attribute name="name" type="xs:string" use="required" /> 
+ </xs:complexType> 
+
+
+ <!-- Base Types -->
+ <xs:complexType name="Property">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="id" type="xs:string" use="required" />
+        <xs:attribute name="type" type="PropertyType" default="string" />
+      </xs:extension>  
+    </xs:simpleContent>
+ </xs:complexType>
+
+  <xs:simpleType name="PropertyType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="string" />
+      <xs:enumeration value="integer" />
+      <xs:enumeration value="float" />
+      <xs:enumeration value="boolean" />
+      <xs:enumeration value="url" />
+    </xs:restriction>
+  </xs:simpleType>
+
+ <xs:group name="Info">
+  <xs:sequence>
+    <xs:element name="name"        type="xs:string" minOccurs="0" />
+    <xs:element name="description" type="xs:string" minOccurs="0" />
+    <xs:element name="notes"       type="xs:string" minOccurs="0" />
+    <xs:element name="label"       type="xs:string" minOccurs="0" />
+  </xs:sequence>
+ </xs:group>
+
+</xs:schema>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+  <xs:element name="sunSpecDataResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="status"     type="ResponseStatusType" />
+        <xs:group   ref="ErrorDetail" minOccurs="0" />
+        <xs:element name="dResult"    type="SunSpecDRResult" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+ 
+  <xs:simpleType name="ResponseStatusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="FAILURE" />
+      <xs:enumeration value="SUCCESS" />
+      <xs:enumeration value="D_FAILURE" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="SunSpecDRResult">
+    <xs:group     ref="ErrorDetail" minOccurs="0" />
+    <xs:attribute name="lid" type="xs:string" />
+    <xs:attribute name="id"  type="xs:string" />
+    
+    <xs:attribute name="t"   type="xs:string" />    <!-- IEEE RFC-3339 timestamps -->
+    <xs:attribute name="cid" type="xs:string" />
+  </xs:complexType>
+
+  <xs:group name="ErrorDetail">
+    <xs:sequence>
+      <xs:element name="code"    type="ErrorCode" />
+      <xs:element name="reason"  type="xs:string" minOccurs="0" />
+      <xs:element name="message" type="xs:string" minOccurs="0" />
+    </xs:sequence>
+  </xs:group>
+
+  <xs:simpleType name="ErrorCode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ACCESS_DENIED" />
+      <xs:enumeration value="INVALID_MESSAGE" /> <!-- XSD compliance -->
+      <xs:enumeration value="INVALID_CREDENTIALS" />
+      <xs:enumeration value="LIMIT_EXCEEDED" />
+      <xs:enumeration value="PROCESSING_EXCEPTION" />
+      <xs:enumeration value="QUOTA_EXCEEDED" />
+      <xs:enumeration value="SYSTEM_MAINTENANCE" />
+      <xs:enumeration value="UNEXPECTED_EXCEPTION" />
+      <xs:enumeration value="UNKNOWN_DEVICE" />
+      <xs:enumeration value="UNKNOWN_LOGGER" />
+    </xs:restriction>
+  </xs:simpleType>
+
+</xs:schema>
