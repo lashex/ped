@@ -57,7 +57,7 @@ class PlantExtract(object):
     
     self.plant = Plant(self.envelope.find('plant'))
     self.sunspec_data = SunSpecData(self.envelope.find('sunSpecData'))
-    self.sunspec_data.parse()
+    if (self.sunspec_data.exists): self.sunspec_data.parse()
     # TODO: sunSpecMetadata
     # TODO: strings
     # TODO: extract extensions
@@ -187,6 +187,7 @@ class Participant(PropertyContainer):
 class PlantExtractException(Exception):
   
   def __init__(self, argument):
+    super(PlantExtractException, self).__init__(argument)
     self.argument = argument
 
 
