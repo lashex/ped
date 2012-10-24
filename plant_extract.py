@@ -8,7 +8,7 @@ import argparse, os
 
 
 xsd_filename = "sunspec_plant_extract.xsd"
-xsd_dir = "xml"
+xsd_dir = "xsd"
 
 class PlantExtract(object):
 
@@ -81,8 +81,11 @@ class PlantExtract(object):
     """
     if assert_:
       self.schema.assert_(self.tree)
+      self.valid = True
+      return self.valid
     else:
-      return self.schema.validate(self.tree)
+      self.valid = self.schema.validate(self.tree)
+      return self.valid
 
 
 class Plant(object):
@@ -90,7 +93,7 @@ class Plant(object):
   def __init__(self, plant_element):
     self.plant_element = pe = plant_element
     if pe is None:
-    	raise PlantExtractException("plant element not found")
+      raise PlantExtractException("plant element not found")
     
     plant_id = pe.get('id')
     if plant_id is None:
@@ -213,6 +216,8 @@ cmd_parser.add_argument('--xsd', type=file, nargs=1,
                         help='override the default XML schema document for validation')
 cmd_parser.add_argument('--novalid', dest='validation', action='store_false',
                         help='do not validate the given plant extract documents')
+cmd_parser.add_argument('--log', dest='logging',
+                        help='override the default WARN log level') # TODO: accept log levels
 
 args = cmd_parser.parse_args()
 
@@ -222,6 +227,5 @@ print args.ped
 ped = PlantExtract(args.ped[0])
 # print ped.tostring()
 print ped.last()
-print ped.valid()
 print ped.plant.tostring()
 print ped.sunspec_data.tostring()

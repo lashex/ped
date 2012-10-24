@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sunSpecPlantExtract t="2011-07-23T08:40:50Z" seqId="1" lastSeqId="1" v="1">
+  <plant id="c0c18885d5f54cc28792e67d235e0db6" v="1" locale="en">
+		<name>Lorum ipsum Power</name>
+		<description>Lorum ipsum description</description>
+		<notes>Lorum ipsum and more lorum ipsum</notes>
+		<activationDate>2011-03-22</activationDate>
+    <location>
+			<latitude>-4.651711</latitude>
+			<longitude>55.454865</longitude>
+			<line1>12333 Sesame Street</line1>
+			<line2>apt #12</line2>
+			<city>Beach City</city>
+			<stateProvince>SC-05</stateProvince>
+			<country>SYC</country>
+			<postal>MLLQL G6TX5</postal>
+			<elevation>1028</elevation>
+			<timezone>+04:00</timezone>
+			<property id="parcelNumber">455</property>
+			<property id="mapURL" type="url">http://blah.com/map?1667</property>
+		</location>
+		<namePlate>
+			<property id="installedDCCapacity" type="float">250</property>
+			<property id="installedACCapacity" type="float">240</property>
+			<property id="installedPanelArea"  type="integer">4000</property>
+			<property id="nominalPowerRating"  type="float">255.4</property>
+		</namePlate>
+		<capabilities>
+			<property id="fixedWatt" />
+			<property id="fixedPF" />
+			<property id="fixedVAr" />
+			<property id="voltVAr" />
+			<property id="freqWatt" />
+			<property id="dynamicVAr" />
+			<property id="lowVoltageRideThrough" />
+			<property id="highVoltageRideThrough" />
+			<property id="charge" />
+			<property id="discharge" />
+		</capabilities>
+		<participant type="operator">
+			<property id="name"    type="string">Seychelles Power</property>
+			<property id="contact" type="string">Sally Sey</property>
+			<property id="phone"   type="string">14085557899</property>
+			<property id="email"   type="string">sally@sey-power.com</property>
+		</participant>
+  </plant>
+  <sunSpecData v="1">
+    <d lid="11:22:33:44:55:66" id="AISC40-e101001" t="2012-09-12T14:16:33Z">
+      <m id="1" x="1">
+        <p id="Mn">Amalgamated Industries</p>
+        <p id="Md">Composite SuperDevice</p>
+        <p id="Opt">Mark 2 &lt;&amp;&apos;&gt;</p>
+        <p id="Vr">3.14.159</p>
+        <p id="SN">9876543210</p>
+        <p id="DA">99</p>
+      </m>
+      <m id="101" x="2">
+        <p id="A" sf="-1">900</p>
+        <p id="AphA" sf="-1">900</p>
+        <p id="PhVphA" sf="-1">1200</p>
+        <p id="W" sf="-1">23402</p>
+        <p id="Hz" sf="-2">6002</p>
+        <p id="WH">32831049</p>
+        <p id="DCA" sf="-1">728</p>
+        <p id="DCV">302</p>
+        <p id="DCW">21985</p>
+        <p id="TmpCab">31</p>
+        <p id="St">4</p>
+        <p id="StVnd">0</p>
+        <p id="Evt1">65535</p>
+        <p id="Evt2">65535</p>
+        <p id="EvtVnd1">0</p>
+        <p id="EvtVnd2">0</p>
+        <p id="EvtVnd3">0</p>
+        <p id="EvtVnd4">0</p>
+      </m>
+      <m id="103" x="3">
+        <p id="A" sf="-1">900</p>
+        <p id="AphA" sf="-1">300</p>
+        <p id="AphB" sf="-1">290</p>
+        <p id="AphC" sf="-1">302</p>
+        <p id="PPVphAB" sf="-1">2080</p>
+        <p id="PPVphBC" sf="-1">2080</p>
+        <p id="PPVphCA" sf="-1">2080</p>
+        <p id="PhVphA" sf="-1">1200</p>
+        <p id="PhVphB" sf="-1">1200</p>
+        <p id="PhVphC" sf="-1">1200</p>
+        <p id="W" sf="-1">23402</p>
+        <p id="Hz" sf="-2">6002</p>
+        <p id="WH">32831049</p>
+        <p id="DCA" sf="-1">728</p>
+        <p id="DCV">302</p>
+        <p id="DCW">23248</p>
+        <p id="TmpCab">31</p>
+        <p id="St">4</p>
+        <p id="StVnd">0</p>
+        <p id="Evt1">0</p>
+        <p id="Evt2">0</p>
+        <p id="EvtVnd1">0</p>
+        <p id="EvtVnd2">0</p>
+        <p id="EvtVnd3">0</p>
+        <p id="EvtVnd4">0</p>
+      </m>
+      <m id="113" x="4">
+        <p id="A">90.000000</p>
+        <p id="AphA">30.000000</p>
+        <p id="AphB">29.000000</p>
+        <p id="AphC">30.200001</p>
+        <p id="PPVphAB">208.000000</p>
+        <p id="PPVphBC">208.000000</p>
+        <p id="PPVphCA">208.000000</p>
+        <p id="PhVphA">120.000000</p>
+        <p id="PhVphB">120.000000</p>
+        <p id="PhVphC">120.000000</p>
+        <p id="W">2340.199951</p>
+        <p id="Hz">60.020000</p>
+        <p id="VA">0.000000</p>
+        <p id="VAr">0.000000</p>
+        <p id="PF">0.000000</p>
+        <p id="WH">32831048.000000</p>
+        <p id="DCA">72.800003</p>
+        <p id="DCV">302.000000</p>
+        <p id="DCW">21985.000000</p>
+        <p id="TmpCab">31.000000</p>
+        <p id="TmpSnk">0.000000</p>
+        <p id="TmpTrns">0.000000</p>
+        <p id="TmpOt">0.000000</p>
+        <p id="St">4</p>
+        <p id="StVnd">0</p>
+        <p id="Evt1">0</p>
+        <p id="Evt2">0</p>
+        <p id="EvtVnd1">0</p>
+        <p id="EvtVnd2">0</p>
+        <p id="EvtVnd3">0</p>
+        <p id="EvtVnd4">0</p>
+      </m>
+      <m id="301" x="5">
+        <p id="E_BaseMet_AirTemperature">18</p>
+        <p id="E_BaseMet_RelativeHumidity">222</p>
+        <p id="E_BaseMet_BarometricPressure">17</p>
+        <p id="E_BaseMet_WindSpeed">234</p>
+        <p id="E_BaseMet_WindDirection">10</p>
+        <p id="E_BaseMet_Rain">0</p>
+      </m>
+      <m id="307" x="6">
+        <p id="TmpAmb" sf="-1">18</p>
+        <p id="RH">222</p>
+        <p id="Pres">17</p>
+        <p id="WndSpd">234</p>
+        <p id="WndDir">10</p>
+        <p id="Rain">0</p>
+        <p id="Snw">0</p>
+        <p id="PPT">0</p>
+        <p id="ElecFld">0</p>
+        <p id="SurWet">0</p>
+        <p id="SoilWet">0</p>
+      </m>
+      <m id="304" x="8">
+        <p id="InclX" sf="-2" x="2">920</p>
+        <p id="InclX" sf="-2" x="3">930</p>
+      </m>
+      <m id="401" x="9">
+        <p id="DCA_Max" sf="-2">5423</p>
+        <p id="N">2</p>
+        <p id="Evt">0</p>
+        <p id="EvtVnd">0</p>
+        <p id="DCA" sf="-2">5295</p>
+        <p id="DCAH">29832</p>
+        <p id="DCV" sf="-2">31423</p>
+        <p id="DCTmp">22</p>
+        <p id="InID" x="2">0</p>
+        <p id="InEvt" x="2">1</p>
+        <p id="InEvtVnd" x="2">4</p>
+        <p id="InDCA" sf="-2" x="2">2623</p>
+        <p id="InDCAH" x="2">20948</p>
+        <p id="InID" x="3">1</p>
+        <p id="InEvt" x="3">2</p>
+        <p id="InEvtVnd" x="3">11</p>
+        <p id="InDCA" sf="-2" x="3">3723</p>
+        <p id="InDCAH" x="3">34948</p>
+      </m>
+    </d>
+    <d lid="11:22:33:44:55:66" man="gsc" mod="r800" sn="atmp-12200" 
+       t="2012-09-12T14:16:33Z">
+      <m id="303" x="7">
+        <p id="TmpBOM" sf="-1" x="1">19</p>
+        <p id="TmpBOM" sf="-1" x="2">20</p>
+        <p id="TmpBOM" sf="-1" x="3">18</p>
+        <p id="TmpBOM" sf="-1" x="4">19</p>
+        <p id="TmpBOM" sf="-1" x="5">21</p>
+      </m>
+    </d>
+  </sunSpecData>
+  <sunSpecMetadata>
+    <d lid="11:22:33:44:55:66" man="gsc" mod="r800" sn="atmp-12200">
+      <m id="303">
+        <description>The environmental in the top corner</description>
+        <notes>Under a tree</notes>
+        <p id="TmpBOM" x="1">
+          <description>The panel cell</description>
+          <notes>Some notes about the cell</notes>
+          <property id="unmas">temp-1-45</property>
+        </p>
+        <p id="TmpBOM" x="2">
+          <label>The module</label>
+        </p>
+      </m>
+    </d>
+  </sunSpecMetadata>
+  <strings locale="fr">
+    <plant>
+      <name>Puissance de Lorum ipsum</name>
+      <description>Description d'ipsum de Lorum</description>
+      <notes> Ipsum de Lorum et plus d'ipsum de lorum</notes>
+      <participant type="operator">
+        <property id="operator" type="string"> Puissance des Seychelles </property>
+      </participant>
+    </plant>
+    <sunSpecMetadata>
+      <d lid="11:22:33:44:55:66" man="gsc" mod="r800" sn="atmp-12200">
+        <m id="303">
+          <description> L'ambiant dans le coin supérieur</description>
+          <notes>Sous un arbre</notes>
+          <p id="TmpBOM" x="1">
+            <description>La cellule de panneau</description>
+            <notes>Quelques notes au sujet de la cellule </notes>
+            <property id="unmas">temp-1-45</property>
+          </p>
+          <p id="TmpBOM" x="2">
+            <label>Le module</label>
+          </p>
+        </m>
+      </d>
+    </sunSpecMetadata>
+  </strings>
+<!--
+  <extractExtensions>
+    <extension name="iepmodel.net" 
+               xmlns:location="http://www.iepmodel.net/iep" 
+               xmlns:iep="http://iepmodel.net/iep"> 
+			<iep:project id="" >
+			...
+			</iep:project>
+		</extension>
+	</extractExtensions>
+-->
+</sunSpecPlantExtract>

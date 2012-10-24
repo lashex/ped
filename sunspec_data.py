@@ -1,7 +1,12 @@
 from lxml import etree
 from collections import defaultdict
-import hashlib, os
+import hashlib, os, logging
 
+
+smdx_dir    = "smdx"
+smdx_prefix = "smdx"
+smdx_ext    = ".xml"
+smdx_xsd    = "smdx.xsd"
 
 class SunSpecData(object):
   
@@ -24,6 +29,7 @@ class SunSpecData(object):
       self.device_records.append(DeviceRecord(d_record))
 
   def parse(self):
+    logging.info("SunSpecData.parse()")
     for dr in self.device_records:
       dr.parse()
 
@@ -58,7 +64,7 @@ class DeviceRecord(object):
     self.models = defaultdict(list)
     for m in element.iter('m'):
         m_id = m.get('id')
-        model = model_picker(element, m_id)
+        model = SunSpecModel(element, m_id)
         if (model is not None):
           self.models[m_id].append(model)
 
@@ -97,9 +103,19 @@ class DeviceRecord(object):
 
 class Model(object):
   
-  def __init__(self, element):
+  def __init__(self, element, model_id):
     self.points = defaultdict(list)
-    element = element
+    if (element is None):
+      raise SunSpecDataException("SunSpec model element is required for a Model")
+    else:
+      self.element = element
+    
+    if (model_id is None):
+      raise SunSpecDataException("SunSpec model element must have an id attribute")
+    else:
+      self.model_id = int(model_id)
+
+    print '>> contsructing model for model_id:' + str(model_id)
     
   def parse(self):
     print '>> Parsing only me <<'
@@ -118,18 +134,41 @@ class SunSpecDataException(Exception):
     self.argument = argument
 
 
-class CommonModel(Model):
-  model_id = '1'               # SunSpecModels model id value 
+class SunSpecModel(Model):
 
-  def __init__(self, element):
-    super(CommonModel, self).__init__(element)
+  def __init__(self, element, model_id=None):
+    super(SunSpecModel, self).__init__(element, model_id)
     
+    smdx_filename = smdx_prefix + "_" + str.rjust(str(self.model_id), 5, "0") + smdx_ext
+    self.exists = False
+    smdx = schema = None
     
-class BackOfModuleTempModel(Model):
-  model_id = '303'             # SunSpecModels model id value 
+    try:
+      smdx = etree.parse(os.path.join(os.getcwd(), smdx_dir, smdx_filename))
+    except IOError:
+      logging.warning("IOError caught while opening " + smdx_filename)
+
+    try:
+      schema_doc = etree.parse(os.path.join(os.getcwd(), smdx_dir, smdx_xsd))
+      schema = etree.XMLSchema(schema_doc)
+    except IOError:
+      logging.warning("IOError caught while opening " + smdx_xsd)
+    
+    if (schema is None) or (smdx is None):
+      return
+    else:
+      self.exists = True
+      self.__valid(schema, smdx)
   
-  def __init__(self, element):
-    super(BackOfModuleTempModel, self).__init__(element)
+  def __valid(self, schema, smdx, assert_=False):
+    """Determines if this SunSpecModel is valid XML in compliance with the SMDX XSD
+    """
+    if assert_:
+      schema.assert_(smdx)
+      self.valid = True
+    else:
+      self.valid = schema.validate(smdx)
+      return self.valid
 
 
 ####################
@@ -142,14 +181,3 @@ def get_attr(element, attr_name):
     attr_value = element.get(attr_name)
   
   return attr_value
-  
-def model_picker(element, model_id):
-  model = None
-  if model_id == CommonModel.model_id:
-    model = CommonModel(element)
-    print '>> found CommonModel <<'
-  elif model_id == BackOfModuleTempModel.model_id:
-    model = BackOfModuleTempModel(element)
-    print '>> found BackOfModuleTempModel <<'
-  
-  return model

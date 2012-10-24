@@ -1,48 +1,48 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <sunSpecPlantExtract t="2011-07-23T08:40:50Z" seqId="1" lastSeqId="1" v="1">
   <plant id="c0c18885d5f54cc28792e67d235e0db6" v="1" locale="en">
-		<name>Lorum ipsum Power</name>
-		<description>Lorum ipsum description</description>
-		<notes>Lorum ipsum and more lorum ipsum</notes>
-		<activationDate>2011-03-22</activationDate>
+    <name>Lorum ipsum Power</name>
+    <description>Lorum ipsum description</description>
+    <notes>Lorum ipsum and more lorum ipsum</notes>
+    <activationDate>2011-03-22</activationDate>
     <location>
-			<latitude>-4.651711</latitude>
-			<longitude>55.454865</longitude>
-			<line1>12333 Sesame Street</line1>
-			<line2>apt #12</line2>
-			<city>Beach City</city>
-			<stateProvince>SC-05</stateProvince>
-			<country>SYC</country>
-			<postal>MLLQL G6TX5</postal>
-			<elevation>1028</elevation>
-			<timezone>+04:00</timezone>
-			<property id="parcelNumber">455</property>
-			<property id="mapURL" type="url">http://blah.com/map?1667</property>
-		</location>
-		<namePlate>
-			<property id="installedDCCapacity" type="float">250</property>
-			<property id="installedACCapacity" type="float">240</property>
-			<property id="installedPanelArea"  type="integer">4000</property>
-			<property id="nominalPowerRating"  type="float">255.4</property>
-		</namePlate>
-		<capabilities>
-			<property id="fixedWatt" />
-			<property id="fixedPF" />
-			<property id="fixedVAr" />
-			<property id="voltVAr" />
-			<property id="freqWatt" />
-			<property id="dynamicVAr" />
-			<property id="lowVoltageRideThrough" />
-			<property id="highVoltageRideThrough" />
-			<property id="charge" />
-			<property id="discharge" />
-		</capabilities>
-		<participant type="operator">
-			<property id="name"    type="string">Seychelles Power</property>
-			<property id="contact" type="string">Sally Sey</property>
-			<property id="phone"   type="string">14085557899</property>
-			<property id="email"   type="string">sally@sey-power.com</property>
-		</participant>
+      <latitude>-4.651711</latitude>
+      <longitude>55.454865</longitude>
+      <line1>12333 Sesame Street</line1>
+      <line2>apt #12</line2>
+      <city>Beach City</city>
+      <stateProvince>SC-05</stateProvince>
+      <country>SYC</country>
+      <postal>MLLQL G6TX5</postal>
+      <elevation>1028</elevation>
+      <timezone>+04:00</timezone>
+      <property id="parcelNumber">455</property>
+      <property id="mapURL" type="url">http://blah.com/map?1667</property>
+    </location>
+    <namePlate>
+      <property id="installedDCCapacity" type="float">250</property>
+      <property id="installedACCapacity" type="float">240</property>
+      <property id="installedPanelArea"  type="integer">4000</property>
+      <property id="nominalPowerRating"  type="float">255.4</property>
+    </namePlate>
+    <capabilities>
+      <property id="fixedWatt" />
+      <property id="fixedPF" />
+      <property id="fixedVAr" />
+      <property id="voltVAr" />
+      <property id="freqWatt" />
+      <property id="dynamicVAr" />
+      <property id="lowVoltageRideThrough" />
+      <property id="highVoltageRideThrough" />
+      <property id="charge" />
+      <property id="discharge" />
+    </capabilities>
+    <participant type="operator">
+      <property id="name"    type="string">Seychelles Power</property>
+      <property id="contact" type="string">Sally Sey</property>
+      <property id="phone"   type="string">14085557899</property>
+      <property id="email"   type="string">sally@sey-power.com</property>
+    </participant>
   </plant>
   <sunSpecData v="1">
     <d lid="11:22:33:44:55:66" id="GSC400-e101001" t="2011-05-12T09:20:50Z" cid="AR45">
@@ -107,10 +107,10 @@
     <extension name="iepmodel.net" 
                xmlns:location="http://www.iepmodel.net/iep" 
                xmlns:iep="http://iepmodel.net/iep"> 
-			<iep:project id="" >
-			...
-			</iep:project>
-		</extension>
-	</extractExtensions>
+      <iep:project id="" >
+      ...
+      </iep:project>
+    </extension>
+  </extractExtensions>
 -->
 </sunSpecPlantExtract>
