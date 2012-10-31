@@ -108,7 +108,7 @@ class Plant(object):
     self.description = get_node_value(pe, 'description')
     self.notes       = get_node_value(pe, 'notes')
     ad = get_node_value(pe, 'activationDate')
-    self.activation_date = datetime.strptime(ad, '%Y-%m-%d')
+    if (ad is not None): self.activation_date = datetime.strptime(ad, '%Y-%m-%d')
     self.location = Location(pe.find(Location.element_name))
     self.name_plate = NamePlate(pe.find(NamePlate.element_name))
     self.capabilities = Capabilities(pe.find(Capabilities.element_name))
@@ -120,8 +120,7 @@ class Plant(object):
   def tostring(self):
     """Produces a string representation of some parsed Plant values
     """
-    s = ("Plant id:" + self.id.hex + ", v:" + str(self.version) + ", name:"  + self.name +
-         ", activation:" + self.activation_date.isoformat())
+    s = ("Plant id:" + self.id.hex + ", v:" + str(self.version) + ", name:"  + self.name)
     return s
 
 
@@ -228,4 +227,4 @@ ped = PlantExtract(args.ped[0])
 # print ped.tostring()
 print ped.last()
 print ped.plant.tostring()
-print ped.sunspec_data.tostring()
+# print ped.sunspec_data.tostring()

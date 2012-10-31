@@ -1,12 +1,10 @@
 from lxml import etree
+from lxml import objectify
 from collections import defaultdict
+from sunspec_smdx import SMDX, SMDXPoint
 import hashlib, os, logging
 
 
-smdx_dir    = "smdx"
-smdx_prefix = "smdx"
-smdx_ext    = ".xml"
-smdx_xsd    = "smdx.xsd"
 
 class SunSpecData(object):
   
@@ -64,9 +62,9 @@ class DeviceRecord(object):
     self.models = defaultdict(list)
     for m in element.iter('m'):
         m_id = m.get('id')
-        model = SunSpecModel(element, m_id)
-        if (model is not None):
-          self.models[m_id].append(model)
+        if (m_id is not None):
+          logging.info("DeviceRecord.__init__() appending model_id: " + m_id)
+          self.models[m_id].append(SunSpecModel(element, m_id))
 
   def __determine_id(self):
     self.device_id_type = None
@@ -86,9 +84,9 @@ class DeviceRecord(object):
     return
     
   def parse(self):
-    print '>> Parsing models <<'
+    logging.info("SunSpecData.DeviceRecord.parse()")
     m = self.models
-    
+    print m
 
   def tostring(self):
     s  = "Device" + os.linesep
@@ -117,9 +115,6 @@ class Model(object):
 
     print '>> contsructing model for model_id:' + str(model_id)
     
-  def parse(self):
-    print '>> Parsing only me <<'
-    
 
 class Point(object):
 
@@ -138,37 +133,9 @@ class SunSpecModel(Model):
 
   def __init__(self, element, model_id=None):
     super(SunSpecModel, self).__init__(element, model_id)
-    
-    smdx_filename = smdx_prefix + "_" + str.rjust(str(self.model_id), 5, "0") + smdx_ext
-    self.exists = False
-    smdx = schema = None
-    
-    try:
-      smdx = etree.parse(os.path.join(os.getcwd(), smdx_dir, smdx_filename))
-    except IOError:
-      logging.warning("IOError caught while opening " + smdx_filename)
 
-    try:
-      schema_doc = etree.parse(os.path.join(os.getcwd(), smdx_dir, smdx_xsd))
-      schema = etree.XMLSchema(schema_doc)
-    except IOError:
-      logging.warning("IOError caught while opening " + smdx_xsd)
-    
-    if (schema is None) or (smdx is None):
-      return
-    else:
-      self.exists = True
-      self.__valid(schema, smdx)
-  
-  def __valid(self, schema, smdx, assert_=False):
-    """Determines if this SunSpecModel is valid XML in compliance with the SMDX XSD
-    """
-    if assert_:
-      schema.assert_(smdx)
-      self.valid = True
-    else:
-      self.valid = schema.validate(smdx)
-      return self.valid
+    smdx = SMDX(element, model_id)
+    print smdx.get_points()
 
 
 ####################
