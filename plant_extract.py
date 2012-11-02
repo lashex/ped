@@ -4,11 +4,13 @@ from datetime import datetime
 from uuid import UUID
 from collections import defaultdict
 from sunspec_data import SunSpecData
-import argparse, os
+import argparse, os, logging
 
 
 xsd_filename = "sunspec_plant_extract.xsd"
 xsd_dir = "xsd"
+
+
 
 class PlantExtract(object):
 
@@ -215,10 +217,12 @@ cmd_parser.add_argument('--xsd', type=file, nargs=1,
                         help='override the default XML schema document for validation')
 cmd_parser.add_argument('--novalid', dest='validation', action='store_false',
                         help='do not validate the given plant extract documents')
-cmd_parser.add_argument('--log', dest='logging',
-                        help='override the default WARN log level') # TODO: accept log levels
+cmd_parser.add_argument('--log', dest='loglevel', default='WARNING',
+                        help='set the log level')
 
 args = cmd_parser.parse_args()
+if args.loglevel is not None:
+	logging.getLogger().setLevel(args.loglevel.upper())
 
 # Now for some post parsing output
 print args.ped

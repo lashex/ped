@@ -14,7 +14,7 @@ smdx_schema_parser = None
 
 class SMDX(object):
   def __init__(self, element, model_id):
-    self.exists = False
+    self.points = {}
     self.smdx_tree = None
     self.model_id = model_id
     smdx_filename = smdx_prefix + "_" + str.rjust(str(self.model_id), 5, "0") + smdx_ext
@@ -25,22 +25,31 @@ class SMDX(object):
       self.smdx_tree = objectify.parse(os.path.join(os.getcwd(), smdx_dir, smdx_filename), 
                                        parser)
     except IOError:
-      logging.warning("IOError caught while opening " + smdx_filename)
+      logging.error("IOError caught while opening " + smdx_filename)
       
     if (self.smdx_tree is None):
+      raise SunSpecSMDXException("SMDX object requires valid SMDX file: " + smdx_filename)
       return
-    else:
-      self.exists = True
     
     
   def get_points(self):
     root = self.smdx_tree.getroot()
-    points = defaultdict(list)
     for p in root.model.block.point:
       p_id = p.get('id')
-      points[p_id].append(SMDXPoint(p))
+      self.points[p_id] = SMDXPoint(p)
     
-    return points
+    return self.points
+
+
+  def get_mandatory_points(self):
+    man_points = {}
+    points = self.get_points()
+    for p_id, p in points.items():
+      if p.mandatory:
+        man_points[p.id] = p
+   
+    return man_points
+
 
 class SMDXPoint(object):
   '''SMDX Point class that understands points like:
@@ -49,18 +58,31 @@ class SMDXPoint(object):
   def __init__(self, element):
     element = element
     if (element is None) or (element.tag != 'point'):
-      logging.info("SMDXPoint objects must have a point element")
+      logging.info("SMDXPoint objects must have a 'point' element")
       return
     
     self.id     = element.get('id')
+    logging.info("SMDXPoint.__init__() self.id: " + self.id)
     self.len    = element.get('len')
     self.offset = element.get('offset')
     self.type   = element.get('type')
     self.sf     = element.get('sf')
     self.units  = element.get('units')
     self.access = element.get('access')
-    self.mandatory = bool(element.get('mandatory'))
+    self.mandatory = False
+    mand = element.get('mandatory')
+    if mand is not None:
+      self.mandatory = True if (mand.lower() == "true") else False
     
+    logging.info("SMDXPoint.__init__() self.mandatory: " + str(self.mandatory))
+
+
+class SunSpecSMDXException(Exception):
+  
+  def __init__(self, argument):
+    super(SunSpecSMDXException, self).__init__(argument)
+    self.argument = argument
+
 
 def get_smdx_parser():
   global smdx_schema_parser
@@ -68,10 +90,10 @@ def get_smdx_parser():
     try:
       schema_etree = etree.parse(os.path.join(os.getcwd(), smdx_dir, smdx_xsd))
       schema = etree.XMLSchema(schema_etree)
-      schema_parser = objectify.makeparser(schema = schema)
       logging.info("get_smdx_parser() getting a global lxml.objectify SMDX parser")
+      smdx_schema_parser = objectify.makeparser(schema = schema)
     except IOError:
-      logging.warning("IOError caught while opening " + schema_filename)
+      logging.error("IOError caught while opening " + schema_filename)
 
   return smdx_schema_parser
     

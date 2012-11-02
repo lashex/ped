@@ -27,7 +27,7 @@ class SunSpecData(object):
       self.device_records.append(DeviceRecord(d_record))
 
   def parse(self):
-    logging.info("SunSpecData.parse()")
+    logging.debug("SunSpecData.parse()")
     for dr in self.device_records:
       dr.parse()
 
@@ -44,7 +44,7 @@ class DeviceRecord(object):
   def __init__(self, element):
     element = element
     if element is None:
-      print "DeviceRecord element provided is None"
+      logging.warning("DeviceRecord.__init__() element provided is None")
       return
 
     self.manufacturer = get_attr(element, 'man')
@@ -57,14 +57,13 @@ class DeviceRecord(object):
     self.correlation_id = get_attr(element, 'cid')
 
     self.__determine_id()
-    print self.tostring()
 
-    self.models = defaultdict(list)
+    self.models = {}
     for m in element.iter('m'):
         m_id = m.get('id')
         if (m_id is not None):
-          logging.info("DeviceRecord.__init__() appending model_id: " + m_id)
-          self.models[m_id].append(SunSpecModel(element, m_id))
+          logging.info("DeviceRecord.__init__() adding model_id: " + m_id)
+          self.models[m_id] = Model(m, m_id)
 
   def __determine_id(self):
     self.device_id_type = None
@@ -84,9 +83,9 @@ class DeviceRecord(object):
     return
     
   def parse(self):
-    logging.info("SunSpecData.DeviceRecord.parse()")
-    m = self.models
-    print m
+    logging.debug("SunSpecData.DeviceRecord.parse()")
+    for m_id, model in self.models.items():
+      model.parse()
 
   def tostring(self):
     s  = "Device" + os.linesep
@@ -102,7 +101,7 @@ class DeviceRecord(object):
 class Model(object):
   
   def __init__(self, element, model_id):
-    self.points = defaultdict(list)
+    self.points = {}
     if (element is None):
       raise SunSpecDataException("SunSpec model element is required for a Model")
     else:
@@ -113,13 +112,61 @@ class Model(object):
     else:
       self.model_id = int(model_id)
 
-    print '>> contsructing model for model_id:' + str(model_id)
+    self.smdx = SMDX(element, model_id)
+    logging.info('Model constructed for model_id:' + str(model_id))
+
+
+  def parse(self):
+    logging.debug("Model.parse() model_id:" + str(self.model_id))
+    self.points = self.get_points()
+    self.__has_mandatory_points()
+  
+  
+  def get_points(self):
+    logging.info("Model.get_points() instantiating Points")
+    for p in self.element.iter('p'):
+      point = Point(p)
+      self.points[point.id] = point
     
+    smdx_points = self.smdx.get_points()
+    logging.info("Model.get_points() adding units from SMDXPoints to Points")
+    for p_id, p in self.points.items():
+      if p.id in smdx_points:
+        p.unit = smdx_points[p.id].units
+      else:
+        logging.warning("Point.id:"+ str(p.id) + 
+                        " exists in Model but shouldn't for model_id: " + 
+                        str(self.model_id))
+      
+    return self.points
+
+
+  def __has_mandatory_points(self):
+    man_points = self.smdx.get_mandatory_points()
+    points = self.points
+    logging.debug("Model.__has_mandatory_points()")
+    missing_mand = {}
+    
+    for sp_id, sp in man_points.items():
+      if sp.mandatory:
+        if sp.id in points:
+          continue
+        else:
+          logging.warning("Model.model_id:" + str(self.model_id) + 
+                          " missing mandatory point with id:" + sp.id)
+          missing_mand[sp.id] = sp
+    
+    return missing_mand
+
 
 class Point(object):
 
   def __init__(self, element):
     element = element
+    self.id    = element.get('id')
+    self.x     = element.get('x')
+    self.text  = element.text
+    self.units = None
 
 
 class SunSpecDataException(Exception):
@@ -128,14 +175,6 @@ class SunSpecDataException(Exception):
     super(SunSpecDataException, self).__init__(argument)
     self.argument = argument
 
-
-class SunSpecModel(Model):
-
-  def __init__(self, element, model_id=None):
-    super(SunSpecModel, self).__init__(element, model_id)
-
-    smdx = SMDX(element, model_id)
-    print smdx.get_points()
 
 
 ####################
