@@ -9,12 +9,17 @@ import argparse, os, logging
 
 xsd_filename = "sunspec_plant_extract.xsd"
 xsd_dir = "xsd"
-
+# logger = logging.getLogger('ped')
+# f = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
+# sh = logging.StreamHandler()
+# sh.setFormatter(f)
+# logger.addHandler(sh)
 
 
 class PlantExtract(object):
 
   def __init__(self, ped_filename):
+    logging.debug("PlantExtract.__init__()")
     # open file and validate
     self.ped_filename = ped_filename
     self.tree = etree.parse(self.ped_filename)
@@ -26,11 +31,12 @@ class PlantExtract(object):
     self.envelope = self.tree.getroot()
     if self.envelope is None:
       raise PlantExtractException("sunSpecPlantExtract root not found.")
-    self.__parse()
+    self._parse()
     
-  def __parse(self):
+  def _parse(self):
     """Parse the plant extract document
     """
+    logging.debug("PlantExtract._parse()")
     env = self.envelope
     time = env.get('t')
     if time is None:
@@ -57,8 +63,8 @@ class PlantExtract(object):
     if self.seqId > self.lastSeqId:
       raise PlantExtractException("seqId can't be larger than the lastSeqId")
     
-    self.plant = Plant(self.envelope.find('plant'))
-    self.sunspec_data = SunSpecData(self.envelope.find('sunSpecData'))
+    self.plant = Plant(self.envelope.find(Plant.element_name))
+    self.sunspec_data = SunSpecData(self.envelope.find(SunSpecData.element_name))
     if (self.sunspec_data.exists): self.sunspec_data.parse()
     # TODO: sunSpecMetadata
     # TODO: strings
@@ -66,21 +72,21 @@ class PlantExtract(object):
     return
 
   def tostring(self):
-    """Produces a string representation of the entire Plant Extract XML tree
-    """
+    '''Produces a string representation of the entire Plant Extract XML tree
+    '''
     return etree.tostring(self.tree, pretty_print=True)
 
   def last(self):
-    """Determines if this Plant Extract is the last extract in a set
-    """
+    '''Determines if this Plant Extract is the last extract in a set
+    '''
     if self.seqId == self.lastSeqId:
       return True
     else:
       return False
       
   def valid(self, assert_=False):
-    """Determines if this Plant Extract is valid XML in compliance with the XSD
-    """
+    '''Determines if this Plant Extract is valid XML in compliance with the XSD
+    '''
     if assert_:
       self.schema.assert_(self.tree)
       self.valid = True
@@ -91,9 +97,10 @@ class PlantExtract(object):
 
 
 class Plant(object):
+  element_name = 'plant'
   
-  def __init__(self, plant_element):
-    self.plant_element = pe = plant_element
+  def __init__(self, element):
+    self.element = pe = element
     if pe is None:
       raise PlantExtractException("plant element not found")
     
@@ -116,12 +123,12 @@ class Plant(object):
     self.capabilities = Capabilities(pe.find(Capabilities.element_name))
     
     self.participants = list()
-    for participant in self.plant_element.iter(Participant.element_name):
+    for participant in self.element.iter(Participant.element_name):
       self.participants.append(Participant(participant))
       
   def tostring(self):
-    """Produces a string representation of some parsed Plant values
-    """
+    '''Produces a string representation of some parsed Plant values
+    '''
     s = ("Plant id:" + self.id.hex + ", v:" + str(self.version) + ", name:"  + self.name)
     return s
 
@@ -132,14 +139,15 @@ class PropertyContainer(object):
     self.properties = defaultdict(list)
     self.element = my_element
     if (self.element is not None):
-      for property in self.element.iter('property'):
+      for property in self.element.iter(Property.element_name):
         prop_id = property.get('id')
         prop_type = property.get('type')
         self.properties[prop_id].append(Property(prop_id, prop_type, property.text))
 
 
 class Property(object):
-
+  element_name = 'property'
+  
   def __init__(self, id, type, text):
     self.id = id
     self.type = type
@@ -147,7 +155,7 @@ class Property(object):
 
 
 class Location(PropertyContainer):
-  element_name = str('location')
+  element_name = 'location'
   
   def __init__(self, location_element):
     super(Location, self).__init__(location_element)
@@ -166,14 +174,14 @@ class Location(PropertyContainer):
 
 
 class NamePlate(PropertyContainer):
-  element_name = str('namePlate')
+  element_name = 'namePlate'
   
   def __init__(self, nameplate_element):
     super(NamePlate, self).__init__(nameplate_element)
 
 
 class Capabilities(PropertyContainer):
-  element_name = str('capabilities')
+  element_name = 'capabilities'
   
   def __init__(self, capabilities_element):
     super(Capabilities, self).__init__(capabilities_element)
@@ -181,7 +189,7 @@ class Capabilities(PropertyContainer):
 
 
 class Participant(PropertyContainer):
-  element_name = str('participant')
+  element_name = 'participant'
   
   def __init__(self, participant_element):
     super(Participant, self).__init__(participant_element)
@@ -222,7 +230,7 @@ cmd_parser.add_argument('--log', dest='loglevel', default='WARNING',
 
 args = cmd_parser.parse_args()
 if args.loglevel is not None:
-	logging.getLogger().setLevel(args.loglevel.upper())
+  logging.getLogger().setLevel(args.loglevel.upper())
 
 # Now for some post parsing output
 print args.ped
@@ -231,4 +239,5 @@ ped = PlantExtract(args.ped[0])
 # print ped.tostring()
 print ped.last()
 print ped.plant.tostring()
+print ped.sunspec_data.get_matching_points('TmpBOM')
 # print ped.sunspec_data.tostring()

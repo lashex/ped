@@ -4,26 +4,28 @@ from collections import defaultdict
 from sunspec_smdx import SMDX, SMDXPoint
 import hashlib, os, logging
 
+# logger = logging.getLogger('ped.ssd')
 
 
 class SunSpecData(object):
+  element_name = 'sunSpecData'
   
-  def __init__(self, data_element):
-    """Initialize a SunSpecData object given the XML Element
-    """
-    self.data_element = data_element
-    if self.data_element is None: 
+  def __init__(self, element):
+    '''Initialize a SunSpecData object given the XML Element
+    '''
+    self.element = element
+    if self.element is None: 
       self.exists = False
       return
     else: self.exists = True
     
     # check for sunSpecData version, assume '1' if absent
-    v = self.data_element.get('v')
+    v = self.element.get('v')
     if (v is not None): self.version = int(v)
     else: self.version = 1
     
     self.device_records = list()
-    for d_record in self.data_element.iter(DeviceRecord.element_name):
+    for d_record in self.element.iter(DeviceRecord.element_name):
       self.device_records.append(DeviceRecord(d_record))
 
   def parse(self):
@@ -36,6 +38,21 @@ class SunSpecData(object):
     s += "xml: " + etree.tostring(self.data_element, pretty_print=True)
     
     return s
+    
+  def get_matching_points(self, point_id):
+    '''Get a list of points which match the given point_id
+    '''
+    points = list()
+    logging.debug("SunSpecData.get_matching_points() looking for point_id:"+str(point_id))
+    for dr in self.device_records:
+      models = dr.models
+      if models is not None:
+        for m_id, m in models.items():
+          plist = m.get_matching_points(point_id)
+          if plist is not None:
+            points.append(plist)
+    
+    return points
 
 
 class DeviceRecord(object):
@@ -56,16 +73,16 @@ class DeviceRecord(object):
     self.device_id = get_attr(element, 'id')
     self.correlation_id = get_attr(element, 'cid')
 
-    self.__determine_id()
+    self._determine_id()
 
     self.models = {}
-    for m in element.iter('m'):
+    for m in element.iter(Model.element_name):
         m_id = m.get('id')
         if (m_id is not None):
           logging.info("DeviceRecord.__init__() adding model_id: " + m_id)
           self.models[m_id] = Model(m, m_id)
 
-  def __determine_id(self):
+  def _determine_id(self):
     self.device_id_type = None
     gs = None
     if (len(self.model) > 0 and len(self.manufacturer) > 0 and len(self.serial_number) > 0):
@@ -99,6 +116,7 @@ class DeviceRecord(object):
 
 
 class Model(object):
+  element_name = 'm'
   
   def __init__(self, element, model_id):
     self.points = {}
@@ -119,17 +137,20 @@ class Model(object):
   def parse(self):
     logging.debug("Model.parse() model_id:" + str(self.model_id))
     self.points = self.get_points()
-    self.__has_mandatory_points()
+    mand_met = False
+    if (len(self._has_mandatory_points()) == 0):
+      mand_met = True
+    logging.debug("Model.parse() has all mandatory points? " + str(mand_met))
   
   
   def get_points(self):
-    logging.info("Model.get_points() instantiating Points")
-    for p in self.element.iter('p'):
+    logging.debug("Model.get_points() instantiating Points")
+    for p in self.element.iter(Point.element_name):
       point = Point(p)
       self.points[point.id] = point
     
     smdx_points = self.smdx.get_points()
-    logging.info("Model.get_points() adding units from SMDXPoints to Points")
+    logging.debug("Model.get_points() adding units from SMDXPoints to Points")
     for p_id, p in self.points.items():
       if p.id in smdx_points:
         p.unit = smdx_points[p.id].units
@@ -139,12 +160,24 @@ class Model(object):
                         str(self.model_id))
       
     return self.points
+  
+  def get_matching_points(self, point_id):
+    '''Get a list of points which match the given point_id
+    '''
+    points = list() 
+    logging.info("Model.get_matching_points() looking for point_id:"+str(point_id))
+    for p_id, p in self.points.items():
+      logging.debug("Model.get_matching_points() p_id:"+p_id +" given point_id:"+point_id)
+      if p_id == point_id:
+        points.append(p)
+    
+    return points
 
 
-  def __has_mandatory_points(self):
+  def _has_mandatory_points(self):
     man_points = self.smdx.get_mandatory_points()
     points = self.points
-    logging.debug("Model.__has_mandatory_points()")
+    logging.debug("Model._has_mandatory_points()")
     missing_mand = {}
     
     for sp_id, sp in man_points.items():
@@ -158,8 +191,12 @@ class Model(object):
     
     return missing_mand
 
+  def set_metadata(self, element):
+    
+    return
 
 class Point(object):
+  element_name = 'p'
 
   def __init__(self, element):
     element = element
