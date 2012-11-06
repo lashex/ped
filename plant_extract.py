@@ -239,5 +239,6 @@ ped = PlantExtract(args.ped[0])
 # print ped.tostring()
 print ped.last()
 print ped.plant.tostring()
-print ped.sunspec_data.get_matching_points('TmpBOM')
+ps = ped.sunspec_data.get_matching_points('TmpBOM')
+print len(ps), ps
 # print ped.sunspec_data.tostring()

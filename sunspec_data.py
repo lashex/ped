@@ -49,7 +49,7 @@ class SunSpecData(object):
       if models is not None:
         for m_id, m in models.items():
           plist = m.get_matching_points(point_id)
-          if plist is not None:
+          if (plist is not None) and (len(plist) > 0):
             points.append(plist)
     
     return points
