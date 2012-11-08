@@ -35,7 +35,7 @@ class SunSpecData(object):
 
   def tostring(self):
     s = "SunSpecData v:" + str(self.version)
-    s += "xml: " + etree.tostring(self.data_element, pretty_print=True)
+    s += "xml: " + etree.tostring(self.element, pretty_print=True)
     
     return s
     
@@ -146,7 +146,7 @@ class Model(object):
   def get_points(self):
     logging.debug("Model.get_points() instantiating Points")
     for p in self.element.iter(Point.element_name):
-      point = Point(p)
+      point = Point(self, p)
       self.points[point.id] = point
     
     smdx_points = self.smdx.get_points()
@@ -198,7 +198,8 @@ class Model(object):
 class Point(object):
   element_name = 'p'
 
-  def __init__(self, element):
+  def __init__(self, model, element):
+    self.model = model
     element = element
     self.id    = element.get('id')
     self.x     = element.get('x')
