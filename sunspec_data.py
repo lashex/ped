@@ -153,10 +153,12 @@ class Model(object):
     logging.debug("Model.get_points() adding units from SMDXPoints to Points")
     for p_id, p in self.points.items():
       if p.id in smdx_points:
+        logging.info("Point.id:" + str(p.id) + " found in SMDX.model_id: " + 
+                     str(self.model_id))
         p.unit = smdx_points[p.id].units
       else:
         logging.warning("Point.id:"+ str(p.id) + 
-                        " exists in Model but shouldn't for model_id: " + 
+                        " exists but shouldn't for SMDX.model_id: " + 
                         str(self.model_id))
       
     return self.points
@@ -185,8 +187,8 @@ class Model(object):
         if sp.id in points:
           continue
         else:
-          logging.warning("Model.model_id:" + str(self.model_id) + 
-                          " missing mandatory point with id:" + sp.id)
+          logging.warning("Model.id:" + str(self.model_id) + 
+                          " missing mandatory SMDXPoint.id:" + sp.id)
           missing_mand[sp.id] = sp
     
     return missing_mand

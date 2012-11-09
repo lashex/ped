@@ -13,6 +13,8 @@ smdx_schema_parser = None
 
 
 class SMDX(object):
+  # TODO: Turn this into a factory returning the same SMDX if requested multiple times
+
   def __init__(self, element, model_id):
     self.points = {}
     self.smdx_tree = None
@@ -34,9 +36,10 @@ class SMDX(object):
     
   def get_points(self):
     root = self.smdx_tree.getroot()
-    for p in root.model.block.point:
-      p_id = p.get('id')
-      self.points[p_id] = SMDXPoint(p)
+    for b in root.model.block:
+      for p in b.point:
+        p_id = p.get('id')
+        self.points[p_id] = SMDXPoint(p)
     
     return self.points
 
