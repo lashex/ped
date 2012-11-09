@@ -46,7 +46,7 @@
       <point id="Nam" offset="0" access="rw" type="string" len="8" mandatory="false"  />
       <point id="ActPts" offset="8" access="rw" type="uint16" len="1" mandatory="true"  />
       <point id="ActIndx" offset="9" access="r" type="uint16" len="1" mandatory="true"  />
-      <point id="StrTms" offset="10" access="rw" type="uint16" len="2" mandatory="true" units="Secs" />
+      <point id="StrTms" offset="10" access="rw" type="uint32" len="2" mandatory="true" units="Secs" />
       <point id="SchdTyp" offset="12" access="rw" type="enum16" len="1" mandatory="false">
         <symbol id="ONETIME">0</symbol>
         <symbol id="DAILY">1</symbol>
