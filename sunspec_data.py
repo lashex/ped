@@ -2,6 +2,7 @@ from lxml import etree
 from lxml import objectify
 from collections import defaultdict
 from sunspec_smdx import SMDX, SMDXPoint
+import datetime
 import hashlib, os, logging
 
 # logger = logging.getLogger('ped.ssd')
@@ -32,6 +33,7 @@ class SunSpecData(object):
     logging.debug("SunSpecData.parse()")
     for dr in self.device_records:
       dr.parse()
+    self.get_points_in_period(None, None)
 
   def tostring(self):
     s = "SunSpecData v:" + str(self.version)
@@ -53,6 +55,17 @@ class SunSpecData(object):
             points.append(plist)
     
     return points
+    
+  def get_points_in_period(self, startTime, endTime):
+    now = datetime.datetime.now()
+    if startTime is None:
+      startTime =  now - datetime.timedelta(minutes=15)
+    if endTime is None:
+      endTime = now
+      
+    print startTime, endTime
+    return
+
 
 
 class DeviceRecord(object):
@@ -74,6 +87,13 @@ class DeviceRecord(object):
     self.correlation_id = get_attr(element, 'cid')
 
     self._determine_id()
+    time = get_attr(element, 't')
+    if (time is None) or (time is ''):
+      raise SunSpecDataException("DeviceRecord 't' attribute is required.")
+    else:
+      # SunSpecData <d ... t="YYYY-MM-DDThh:mm:ssZ"
+      self.time = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
+      print self.time
 
     self.models = {}
     for m in element.iter(Model.element_name):
@@ -162,6 +182,7 @@ class Model(object):
                         str(self.model_id))
       
     return self.points
+
   
   def get_matching_points(self, point_id):
     '''Get a list of points which match the given point_id
