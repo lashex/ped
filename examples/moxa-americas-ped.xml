@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sunSpecPlantExtract t="2011-07-23T08:40:50Z" seqId="1" lastSeqId="1" v="1">
+  <plant id="e0d49f05f6d949d5bf160b927ad5a156" v="1" locale="en-US">
+    <name>Moxa Americas HQ Solar Plant</name>
+    <description>Moxa Americas Headquarters solar power plant</description>
+    <notes>Lorem ipsum and more lorem ipsum</notes> <!-- TODO: Notes -->
+    <activationDate>2011-03-22</activationDate>     <!-- TODO: Moxa activation date -->
+    <location>
+      <latitude>33.908861</latitude>
+      <longitude>-117.853975</longitude>
+      <line1>601 Valencia Ave.</line1>
+      <line2>#100</line2>
+      <city>Brea</city>
+      <stateProvince>CA</stateProvince>
+      <country>USA</country>
+      <postal>92823</postal>
+      <elevation>1028</elevation>
+      <timezone>-08:00</timezone>
+      <property id="parcelNumber">336-531-23-00</property>
+      <property id="mapURL" type="url">http://goo.gl/maps/1ut5d</property>
+    </location>
+    <namePlate>
+      <property id="installedDCCapacity" type="float">311.575</property>
+      <property id="installedACCapacity" type="float">272.571</property>
+      <property id="installedPanelArea"  type="integer">2198</property> <!-- 1.956 * .992 * 1133 -->
+      <!-- <property id="nominalPowerRating"  type="float">255.4</property> -->
+    </namePlate>
+<!-- uncomment when capabilities are known   
+    <capabilities>
+      <property id="fixedWatt" />
+      <property id="fixedPF" />
+      <property id="fixedVAr" />
+      <property id="voltVAr" />
+      <property id="freqWatt" />
+      <property id="dynamicVAr" />
+      <property id="lowVoltageRideThrough" />
+      <property id="highVoltageRideThrough" />
+      <property id="charge" />
+      <property id="discharge" />
+    </capabilities> -->
+    <participant type="operator">
+      <property id="name" type="string">SoCalSolar</property>
+      <property id="contact" type="string">Todd Ayers</property>
+      <property id="phone" type="string">16618101584</property>
+      <property id="email" type="string">todd@socalsolarinc.com</property>
+    </participant>
+  </plant>
+  <sunSpecData v="1">
+    <!-- TODO: currently includes fake lid, man, mod and t values on each <d> -->
+    <d lid="11:22:33:44:55:66" man="power-one" mod="pvic300" sn="455270" t="2011-05-12T09:20:50Z">
+      <m id="1">                              
+        <p id="Mn">Power-One</p>          <!-- TODO: confirm Mn and Md specifics -->
+        <p id="Md">PVIC300</p>
+        <p id="SN">455270</p>
+      </m>
+    </d>
+    <d lid="11:22:33:44:55:66" man="power-one" mod="pvic300" sn="455294" t="2011-05-12T09:20:50Z">
+      <m id="1">                              
+        <p id="Mn">Power-One</p>          <!-- TODO: confirm Mn and Md specifics -->
+        <p id="Md">PVIC300</p>
+        <p id="SN">455294</p>
+      </m>
+    </d>
+    <d lid="11:22:33:44:55:66" man="power-one" mod="pvic300" sn="455278" t="2011-05-12T09:20:50Z">
+      <m id="1">                              
+        <p id="Mn">Power-One</p>          <!-- TODO: confirm Mn and Md specifics -->
+        <p id="Md">PVIC300</p>
+        <p id="SN">455278</p>
+      </m>
+    </d>
+    <d lid="11:22:33:44:55:66" man="power-one" mod="pvic300" sn="467838" t="2011-05-12T09:20:50Z">
+      <m id="1">                              
+        <p id="Mn">Power-One</p>          <!-- TODO: confirm Mn and Md specifics -->
+        <p id="Md">PVIC300</p>
+        <p id="SN">467838</p>
+      </m>
+    </d>
+    <d lid="11:22:33:44:55:66" man="power-one" mod="pvic300" sn="467835" t="2011-05-12T09:20:50Z">
+      <m id="1">                              
+        <p id="Mn">Power-One</p>          <!-- TODO: confirm Mn and Md specifics -->
+        <p id="Md">PVIC300</p>
+        <p id="SN">467835</p>
+      </m>
+    </d>
+    <d lid="11:22:33:44:55:66" man="power-one" mod="pvic300" sn="467841" t="2011-05-12T09:20:50Z">
+      <m id="1">                              
+        <p id="Mn">Power-One</p>          <!-- TODO: confirm Mn and Md specifics -->
+        <p id="Md">PVIC300</p>
+        <p id="SN">467841</p>
+      </m>
+    </d>
+    <d lid="11:22:33:44:55:66" man="eaton" mod="esc16" sn="ESC1600-e1001" t="2011-05-12T09:20:50Z">
+      <m id="1">                              
+        <p id="Mn">EATON Corporation</p>  <!-- TODO: confirm Mn and Md specifics -->
+        <p id="Md">ESC1600</p>
+        <p id="SN">ESC1600-e1001</p>      <!-- TODO: real combiner box serial number(s) -->
+      </m>
+      <m id="403"> 
+        <p id="DCAMax">100</p>
+        <p id="N">16</p>
+      </m>
+    </d>
+    <d lid="11:22:33:44:55:66" man="eaton" mod="esc16" sn="ESC1600-e2002" t="2011-05-12T09:20:52Z">
+      <m id="1">                              
+        <p id="Mn">EATON Corporation</p>  <!-- TODO: confirm device specifics -->
+        <p id="Md">ESC1600</p>
+        <p id="SN">ESC1600-e2002</p>      <!-- TODO: real combiner box serial number(s) -->
+      </m>
+      <m id="403"> 
+        <p id="DCAMax">100</p>
+        <p id="N">16</p>
+      </m>
+    </d>
+    <d lid="11:22:33:44:55:66" man="eaton" mod="esc16" sn="ESC1600-e3003" t="2011-05-12T09:20:53Z">
+      <m id="1">                              
+        <p id="Mn">EATON Corporation</p>  <!-- TODO: confirm device specifics -->
+        <p id="Md">ESC1600</p>
+        <p id="SN">ESC1600-e3003</p>      <!-- TODO: real combiner box serial number(s) -->
+      </m>
+      <m id="403"> 
+        <p id="DCAMax">100</p>
+        <p id="N">16</p>
+      </m>
+    </d>
+    <d lid="11:22:33:44:55:66" man="eaton" mod="esc16" sn="ESC1600-e4004" t="2011-05-12T09:20:54Z">
+      <m id="1">                              
+        <p id="Mn">EATON Corporation</p>  <!-- TODO: confirm device specifics -->
+        <p id="Md">ESC1600</p>
+        <p id="SN">ESC1600-e4004</p>      <!-- TODO: real combiner box serial number(s) -->
+      </m>
+      <m id="403"> 
+        <p id="DCAMax">100</p>
+        <p id="N">16</p>
+      </m>
+    </d>
+    <d lid="11:22:33:44:55:66" man="eaton" mod="esc16" sn="ESC1600-e5005" t="2011-05-12T09:20:55Z">
+      <m id="1">                              
+        <p id="Mn">EATON Corporation</p>  <!-- TODO: confirm device specifics -->
+        <p id="Md">ESC1600</p>
+        <p id="SN">ESC1600-e5005</p>      <!-- TODO: real combiner box serial number(s) -->
+      </m>
+      <m id="403"> 
+        <p id="DCAMax">100</p>
+        <p id="N">16</p>
+      </m>
+    </d>
+  </sunSpecData>
+  <sunSpecMetadata>
+    <d lid="11:22:33:44:55:66" man="eaton" mod="esc16" sn="ESC1600-e1001">
+      <m id="403">
+        <description>The string combiner in the north east corner</description>
+        <notes>On a carport</notes>
+      </m>
+    </d>
+    <d lid="11:22:33:44:55:66" man="eaton" mod="esc16" sn="ESC1600-e2002">
+      <m id="403">
+      </m>
+    </d>
+    <d lid="11:22:33:44:55:66" man="eaton" mod="esc16" sn="ESC1600-e3003">
+      <m id="403">
+      </m>
+    </d>
+    <d lid="11:22:33:44:55:66" man="eaton" mod="esc16" sn="ESC1600-e4004">
+      <m id="403">
+      </m>
+    </d>
+    <d lid="11:22:33:44:55:66" man="eaton" mod="esc16" sn="ESC1600-e5005">
+      <m id="403">
+      </m>
+    </d>
+  </sunSpecMetadata>
+<!-- TODO: uncomment or remove when/if any IEP information is known
+  <extractExtensions>
+    <extension name="iepmodel.net" 
+               xmlns:location="http://www.iepmodel.net/iep" 
+               xmlns:iep="http://iepmodel.net/iep"> 
+      <iep:project id="" >
+         ...IEP compliant incorporated information...
+      </iep:project>
+    </extension>
+  </extractExtensions> 
+-->
+</sunSpecPlantExtract>

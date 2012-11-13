@@ -25,8 +25,8 @@ class PlantExtract(object):
     self.tree = etree.parse(self.ped_filename)
     schema_doc = etree.parse(os.path.join(os.getcwd(), xsd_dir, xsd_filename))
     self.schema = etree.XMLSchema(schema_doc)
-    valid = self.valid() # TODO: interpret command line 'validate' arg
-    logging.debug("PlantExtract.__init__() valid:" + str(valid))
+    valid = self.valid(True) # TODO: interpret command line 'validate' arg
+    logging.info("PlantExtract.__init__() valid:" + str(valid))
     # now parse the Plant Extract
     self.envelope = self.tree.getroot()
     if self.envelope is None:
