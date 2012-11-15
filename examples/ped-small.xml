@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <sunSpecPlantExtract t="2011-07-23T08:40:50Z" seqId="1" lastSeqId="1" v="1">
   <plant id="c0c18885d5f54cc28792e67d235e0db6" v="1" locale="en">
-    <name>Lorum Ipsum Power</name>
-    <description>Lorum ipsum description</description>
-    <notes>Lorum ipsum and more lorum ipsum</notes>
+    <name>Lorem Ipsum Power</name>
+    <description>Lorem ipsum description</description>
+    <notes>Lorem ipsum and more lorem ipsum</notes>
     <activationDate>2011-03-22</activationDate>
     <location>
       <latitude>-4.651711</latitude>

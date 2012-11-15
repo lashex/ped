@@ -209,9 +209,9 @@
   </sunSpecMetadata>
   <strings locale="fr">
     <plant>
-      <name>Puissance de Lorum ipsum</name>
-      <description>Description d'ipsum de Lorum</description>
-      <notes> Ipsum de Lorum et plus d'ipsum de lorum</notes>
+      <name>Puissance de Lorem ipsum</name>
+      <description>Description d'ipsum de Lorem</description>
+      <notes> Ipsum de Lorem et plus d'ipsum de lorem</notes>
       <participant type="operator">
         <property id="operator" type="string"> Puissance des Seychelles </property>
       </participant>
