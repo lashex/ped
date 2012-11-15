@@ -33,14 +33,18 @@ class SunSpecData(object):
     logging.debug("SunSpecData.parse()")
     for dr in self.device_records:
       dr.parse()
-    self.get_points_in_period(None, None)
+      
+    print self.get_time_series_points('TmpBOM')
 
-  def tostring(self):
-    s = "SunSpecData v:" + str(self.version)
-    s += "xml: " + etree.tostring(self.element, pretty_print=True)
-    
-    return s
-    
+
+  def get_points(self):
+    all_points = list()
+    for dr in self.device_records:
+      for model in dr.models:
+        all_points = all_points + model.points
+    return all_points
+
+
   def get_matching_points(self, point_id):
     '''Get a list of points which match the given point_id
     '''
@@ -52,27 +56,56 @@ class SunSpecData(object):
         for m in models:
           plist = m.get_matching_points(point_id)
           if (plist is not None) and (len(plist) > 0):
-            points.append(plist)
-    
+            points = points + plist
     return points
-    
+
+
   def get_points_in_period(self, startTime, endTime):
+    '''Get a list of points which are between the startTime and endTime.
+    
+       Arguments:
+       startTime -- the datetime describing the beginning of the period
+       endTime   -- the datetime describing the end of the period
+       
+       Return:
+       a dictionary of lists -- the key is the time and the list contains Points
+    '''
     now = datetime.datetime.now()
-    if startTime is None:
-      startTime =  now - datetime.timedelta(minutes=15)
     if endTime is None:
       endTime = now
+    if startTime is None:
+      startTime = now
+
+    logging.info("SunSpecData.get_points_in_period: " + str(startTime) +" > "+ str(endTime))
     
-    all_points = list()
-    for dr in self.device_records:
-      for model in dr.models:
-        print model.points
-        all_points = all_points + model.points
+    points = self.get_points()
+    period_points = defaultdict(list)
+    for p in points:
+      if startTime < p.time < endTime:
+        period_points[p.time].append(p) # << BROKEN - the key is the same for multiple points with the same time
+    print 'period points: ', period_points
+    period_points = sorted(period_points.keys())
 
-    for p in all_points:
-      print p.tostring()
-    return
 
+  def get_time_series_points(self, point_id=None):
+    '''Get a list of points as a time keyed dictionary.
+    '''
+    logging.info("SunSpecData.get_time_series_points() point_id:" + str(point_id))
+    ts_points = defaultdict(list)
+    if point_id is None:
+      points = self.get_points()
+    else:
+      points = self.get_matching_points(point_id)
+    
+    for p in points:
+      ts_points[p.time].append(p) # << BROKEN - the key is the same for multiple points with the same time
+    return ts_points
+
+
+  def tostring(self):
+    s = "SunSpecData v:" + str(self.version)
+    s += "xml: " + etree.tostring(self.element, pretty_print=True)
+    return s
 
 
 class DeviceRecord(object):

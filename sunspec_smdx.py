@@ -47,7 +47,7 @@ class SMDX(object):
   def get_mandatory_points(self):
     man_points = {}
     points = self.get_points()
-    for p_id, p in points.items():
+    for p in points.itervalues():
       if p.mandatory:
         man_points[p.id] = p
    
