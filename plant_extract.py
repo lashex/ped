@@ -1,10 +1,10 @@
 from lxml import etree
 from xml.etree.ElementTree import Element
-from datetime import datetime
 from uuid import UUID
 from collections import defaultdict
 from sunspec_data import SunSpecData
 import argparse, os, logging
+import datetime as dt
 
 
 xsd_filename = "sunspec_plant_extract.xsd"
@@ -43,7 +43,7 @@ class PlantExtract(object):
       raise PlantExtractException("sunSpecPlantExtract root node 't' attribute is required.")
     else:
       # Plant Extract t="YYYY-MM-DDThh:mm:ssZ"
-      self.time = datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
+      self.time = dt.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
       
     # check for sunSpecPlantExtract version, assume '1' if absent
     v = env.get('v')
@@ -65,16 +65,19 @@ class PlantExtract(object):
     
     self.plant = Plant(self.envelope.find(Plant.element_name))
     self.sunspec_data = SunSpecData(self.envelope.find(SunSpecData.element_name))
-    if (self.sunspec_data.exists): self.sunspec_data.parse()
     # TODO: sunSpecMetadata
     # TODO: strings
     # TODO: extract extensions
     return
 
+  def parse_data(self):
+      if (self.sunspec_data.exists): self.sunspec_data.parse()
+
   def tostring(self):
     '''Produces a string representation of the entire Plant Extract XML tree
     '''
-    return etree.tostring(self.tree, pretty_print=True)
+    return ''.join(['PlantExtract v:', str(self.version), ' t:', str(self.time), 
+    								' seqId:', str(self.seqId), ' lastSeqId:', str(self.lastSeqId)])
 
   def last(self):
     '''Determines if this Plant Extract is the last extract in a set
@@ -236,8 +239,23 @@ if args.loglevel is not None:
 print args.ped
 
 ped = PlantExtract(args.ped[0])
+print ped.tostring()
+print "PlantExtract parsing sunSpecData"
+ped.parse_data()
 # print ped.tostring()
 print ped.last()
+print "PlantExtract Plant"
 print ped.plant.tostring()
+print 'TmpBOM'
 ps = ped.sunspec_data.get_matching_points('TmpBOM')
-# print ped.sunspec_data.tostring()
+for p in ps:
+	print p.tostring()
+print 'TotWh'
+ps = ped.sunspec_data.get_matching_points('TotWh')
+for p in ps:
+	print p.tostring()
+print "Points in period"
+# startTime: 2012-10-28 22:00:59 endTime: 2012-10-28 22:03:00 > 5 or 6 inclusive
+startTime = dt.datetime(2012, 10, 28, 22, 00, 00)
+endTime   = dt.datetime(2012, 10, 28, 22, 03, 00)
+ped.sunspec_data.get_points_in_period(startTime, endTime, 'TotWh')
