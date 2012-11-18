@@ -10,9 +10,17 @@ smdx_ext    = ".xml"
 smdx_xsd    = "smdx.xsd"
 smdx_schema_parser = None
 
+# SMDX descriptive model id constants
+INVERTER_SINGLE_PHASE = '101'
+INVERTER_SPLIT_PHASE  = '102'
+INVERTER_THREE_PHASE  = '103'
+METER_SINGLE_PHASE    = '201'
+
 
 
 class SMDX(object):
+  _cache={}
+   
   # TODO: Turn this into a factory returning the same SMDX if requested multiple times
 
   def __init__(self, element, model_id):
@@ -32,7 +40,18 @@ class SMDX(object):
     if (self.smdx_tree is None):
       raise SunSpecSMDXException("SMDX object requires valid SMDX file: " + smdx_filename)
       return
-    
+  
+  def __new__(cls, element, model_id):
+    try:
+      return SMDX._cache[model_id]
+    except KeyError:
+      logging.debug("New SMDX object being instantiated for: " + model_id)
+      # you must call __new__ on the base class
+      x = super(SMDX, cls).__new__(cls)
+      x.__init__(element, model_id)
+      SMDX._cache[model_id] = x
+      print SMDX._cache
+      return x
     
   def get_points(self):
     root = self.smdx_tree.getroot()
