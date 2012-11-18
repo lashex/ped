@@ -4,6 +4,7 @@ from collections import defaultdict
 from sunspec_smdx import SMDX, SMDXPoint
 import datetime
 import hashlib, os, logging
+import sys
 
 # logger = logging.getLogger('ped.ssd')
 
@@ -33,8 +34,6 @@ class SunSpecData(object):
     logging.debug("SunSpecData.parse()")
     for dr in self.device_records:
       dr.parse()
-      
-    print self.get_time_series_points('TmpBOM')
 
 
   def get_points(self):
@@ -60,15 +59,16 @@ class SunSpecData(object):
     return points
 
 
-  def get_points_in_period(self, startTime, endTime):
+  def get_points_in_period(self, startTime, endTime, point_id='All'):
     '''Get a list of points which are between the startTime and endTime.
     
        Arguments:
        startTime -- the datetime describing the beginning of the period
        endTime   -- the datetime describing the end of the period
+       point_id  -- the id of the Points to retrieve within the period
        
        Return:
-       a dictionary of lists -- the key is the time and the list contains Points
+       Points in the period as a time keyed dictionary of Points in a list
     '''
     now = datetime.datetime.now()
     if endTime is None:
@@ -78,27 +78,37 @@ class SunSpecData(object):
 
     logging.info("SunSpecData.get_points_in_period: " + str(startTime) +" > "+ str(endTime))
     
-    points = self.get_points()
+    if point_id is 'All':
+      points = self.get_points()
+    else:
+      points = self.get_matching_points(point_id)
+
     period_points = defaultdict(list)
     for p in points:
       if startTime < p.time < endTime:
-        period_points[p.time].append(p) # << BROKEN - the key is the same for multiple points with the same time
+        period_points[p.time].append(p) 
     print 'period points: ', period_points
     period_points = sorted(period_points.keys())
 
 
-  def get_time_series_points(self, point_id=None):
-    '''Get a list of points as a time keyed dictionary.
+  def get_time_keyed_points(self, point_id='All'):
+    '''Get a Point.time keyed dictionary with Points possessing the same time in a list.
+    
+       Arguments:
+       point_id -- the id of the Points to retrieve as a time keyed dict (default: All)
+       
+       Return:
+       Points as a time keyed dictionary of Points in a list
     '''
     logging.info("SunSpecData.get_time_series_points() point_id:" + str(point_id))
     ts_points = defaultdict(list)
-    if point_id is None:
+    if point_id is 'All':
       points = self.get_points()
     else:
       points = self.get_matching_points(point_id)
     
     for p in points:
-      ts_points[p.time].append(p) # << BROKEN - the key is the same for multiple points with the same time
+      ts_points[p.time].append(p)
     return ts_points
 
 
@@ -241,7 +251,7 @@ class Model(object):
         found = False
         for p in points:
           if sp.id == p.id:
-            print "Found mandatory point", p.id
+            logging.info("Found mandatory point:", str(p.id))
             found = True
             break
 
