@@ -3,8 +3,9 @@ from xml.etree.ElementTree import Element
 from uuid import UUID
 from collections import defaultdict
 from sunspec_data import SunSpecData
-import argparse, os, logging
+import os, logging
 import datetime as dt
+import doctest
 
 
 xsd_filename = "sunspec_plant_extract.xsd"
@@ -77,7 +78,7 @@ class PlantExtract(object):
     '''Produces a string representation of the entire Plant Extract XML tree
     '''
     return ''.join(['PlantExtract v:', str(self.version), ' t:', str(self.time), 
-    								' seqId:', str(self.seqId), ' lastSeqId:', str(self.lastSeqId)])
+                    ' seqId:', str(self.seqId), ' lastSeqId:', str(self.lastSeqId)])
 
   def last(self):
     '''Determines if this Plant Extract is the last extract in a set
@@ -120,7 +121,7 @@ class Plant(object):
     self.description = get_node_value(pe, 'description')
     self.notes       = get_node_value(pe, 'notes')
     ad = get_node_value(pe, 'activationDate')
-    if (ad is not None): self.activation_date = datetime.strptime(ad, '%Y-%m-%d')
+    if (ad is not None): self.activation_date = dt.datetime.strptime(ad, '%Y-%m-%d')
     self.location = Location(pe.find(Location.element_name))
     self.name_plate = NamePlate(pe.find(NamePlate.element_name))
     self.capabilities = Capabilities(pe.find(Capabilities.element_name))
@@ -221,41 +222,46 @@ def get_node_value(node, node_name):
 
 ####################
 # command line parsing
-cmd_parser = argparse.ArgumentParser(description='Process one or more Plant Extract Documents')
-cmd_parser.add_argument('ped', type=file, nargs='+',
-                        help='one or more plant extract documents to process - absolute path')
-cmd_parser.add_argument('--xsd', type=file, nargs=1, 
-                        help='override the default XML schema document for validation')
-cmd_parser.add_argument('--novalid', dest='validation', action='store_false',
-                        help='do not validate the given plant extract documents')
-cmd_parser.add_argument('--log', dest='loglevel', default='WARNING',
-                        help='set the log level')
-
-args = cmd_parser.parse_args()
-if args.loglevel is not None:
-  logging.getLogger().setLevel(args.loglevel.upper())
-
-# Now for some post parsing output
-print args.ped
-
-ped = PlantExtract(args.ped[0])
-print ped.tostring()
-print "PlantExtract parsing sunSpecData"
-ped.parse_data()
-# print ped.tostring()
-print ped.last()
-print "PlantExtract Plant"
-print ped.plant.tostring()
-print 'TmpBOM'
-ps = ped.sunspec_data.get_matching_points('TmpBOM')
-for p in ps:
-	print p.tostring()
-print 'TotWh'
-ps = ped.sunspec_data.get_matching_points('TotWh')
-for p in ps:
-	print p.tostring()
-print "Points in period"
-# startTime: 2012-10-28 22:00:59 endTime: 2012-10-28 22:03:00 > 5 or 6 inclusive
-startTime = dt.datetime(2012, 10, 28, 22, 00, 00)
-endTime   = dt.datetime(2012, 10, 28, 22, 03, 00)
-ped.sunspec_data.get_points_in_period(startTime, endTime, 'TotWh')
+if __name__ == '__main__':
+  import argparse
+  cmd_parser = argparse.ArgumentParser(description='Process one or more Plant Extract Documents')
+  cmd_parser.add_argument('ped', type=file, nargs='+',
+                          help='one or more plant extract documents to process - absolute path')
+  cmd_parser.add_argument('--xsd', type=file, nargs=1, 
+                          help='override the default XML schema document for validation')
+  cmd_parser.add_argument('--novalid', dest='validation', action='store_false',
+                          help='do not validate the given plant extract documents')
+  cmd_parser.add_argument('--log', dest='loglevel', default='WARNING',
+                          help='set the log level (default:WARNING)')
+  cmd_parser.add_argument('--test', dest='activate_tests', action='store_true',
+                          help='activate doctests for the Plant Extract class')
+  
+  args = cmd_parser.parse_args()
+  # Now for some post parsing output
+  print args.ped
+  
+  if args.loglevel is not None:
+    logging.getLogger().setLevel(args.loglevel.upper())
+  ped = PlantExtract(args.ped[0])
+  print ped.tostring()
+  print "PlantExtract parsing sunSpecData"
+  ped.parse_data()
+  if args.activate_tests is not None:
+    """ Run some tests on the PlantExtract class
+    >>> print ped.last()
+    >>> print "PlantExtract Plant"
+    >>> print ped.plant.tostring()
+    >>> print 'TmpBOM'
+      ps = ped.sunspec_data.get_matching_points('TmpBOM')
+      for p in ps:
+        print p.tostring()
+    >>> print 'TotWh'
+    ps = ped.sunspec_data.get_matching_points('TotWh')
+    for p in ps:
+      print p.tostring()
+    print "Points in period"
+    # startTime: 2012-10-28 22:00:59 endTime: 2012-10-28 22:03:00 > 5 or 6 inclusive
+    startTime = dt.datetime(2012, 10, 28, 22, 00, 00)
+    endTime   = dt.datetime(2012, 10, 28, 22, 03, 00)
+    ped.sunspec_data.get_points_in_period(startTime, endTime, 'TotWh')
+    """
