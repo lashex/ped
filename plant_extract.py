@@ -19,12 +19,12 @@ xsd_dir = "xsd"
 
 class PlantExtract(object):
 
-  def __init__(self, ped_filename):
+  def __init__(self, ped_file, xsd_file):
     logging.debug("PlantExtract.__init__()")
     # open file and validate
-    self.ped_filename = ped_filename
-    self.tree = etree.parse(self.ped_filename)
-    schema_doc = etree.parse(os.path.join(os.getcwd(), xsd_dir, xsd_filename))
+    self.ped_file = ped_file
+    self.tree = etree.parse(self.ped_file)
+    schema_doc = etree.parse(xsd_file)
     self.schema = etree.XMLSchema(schema_doc)
     valid = self.valid(True) # TODO: interpret command line 'validate' arg
     logging.info("PlantExtract.__init__() valid:" + str(valid))
@@ -75,7 +75,7 @@ class PlantExtract(object):
       if (self.sunspec_data.exists): self.sunspec_data.parse()
 
   def tostring(self):
-    '''Produces a string representation of the entire Plant Extract XML tree
+    '''Produces a string representation of the Plant Extract standard blocks
     '''
     return ''.join(['PlantExtract v:', str(self.version), ' t:', str(self.time), 
                     ' seqId:', str(self.seqId), ' lastSeqId:', str(self.lastSeqId)])
@@ -83,10 +83,7 @@ class PlantExtract(object):
   def last(self):
     '''Determines if this Plant Extract is the last extract in a set
     '''
-    if self.seqId == self.lastSeqId:
-      return True
-    else:
-      return False
+    return self.seqId == self.lastSeqId
       
   def valid(self, assert_=False):
     '''Determines if this Plant Extract is valid XML in compliance with the XSD
@@ -94,11 +91,10 @@ class PlantExtract(object):
     if assert_:
       self.schema.assert_(self.tree)
       self.valid = True
-      return self.valid
     else:
       self.valid = self.schema.validate(self.tree)
-      return self.valid
-
+    
+    return self.valid
 
 class Plant(object):
   element_name = 'plant'
@@ -133,8 +129,7 @@ class Plant(object):
   def tostring(self):
     '''Produces a string representation of some parsed Plant values
     '''
-    s = ("Plant id:" + self.id.hex + ", v:" + str(self.version) + ", name:"  + self.name)
-    return s
+    return ''.join(["Plant id:", self.id.hex, ", v:", str(self.version), ", name:", self.name])
 
 
 class PropertyContainer(object):
@@ -241,16 +236,14 @@ if __name__ == '__main__':
   print args.ped
   
   if args.loglevel is not None:
-    logging.getLogger().setLevel(args.loglevel.upper())
-  ped = PlantExtract(args.ped[0])
-  print ped.tostring()
-  print "PlantExtract parsing sunSpecData"
-  ped.parse_data()
-  if args.activate_tests is not None:
+    loglevel = args.loglevel.upper()
+    print "Setting loglevel to: " + loglevel
+    logging.getLogger().setLevel(loglevel)
+  
+  if args.activate_tests is True:
     """ Run some tests on the PlantExtract class
-    >>> print ped.last()
-    >>> print "PlantExtract Plant"
-    >>> print ped.plant.tostring()
+    >>> ped = PlantExtract(args.ped[0])
+      print ped.last()
     >>> print 'TmpBOM'
       ps = ped.sunspec_data.get_matching_points('TmpBOM')
       for p in ps:
@@ -265,3 +258,13 @@ if __name__ == '__main__':
     endTime   = dt.datetime(2012, 10, 28, 22, 03, 00)
     ped.sunspec_data.get_points_in_period(startTime, endTime, 'TotWh')
     """
+  else:
+    xsd_full_file = os.path.join(os.getcwd(), xsd_dir, xsd_filename)
+    ped = PlantExtract(args.ped[0], xsd_full_file)
+    print ped.tostring()
+    print "PlantExtract Plant"
+    print ped.plant.tostring()
+    print "PlantExtract parsing sunSpecData"
+    ped.parse_data()
+    print ped.sunspec_data.tostring()
+    print "PlantExtract completed parsing of sunSpecData"

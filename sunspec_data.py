@@ -113,9 +113,8 @@ class SunSpecData(object):
 
 
   def tostring(self):
-    s = "SunSpecData v:" + str(self.version)
-    s += "xml: " + etree.tostring(self.element, pretty_print=True)
-    return s
+    return ''.join(['SunSpecData v:', str(self.version), 
+      ' point count: ', str(len(self.get_points()))])
 
 
 class DeviceRecord(object):
@@ -251,7 +250,7 @@ class Model(object):
         found = False
         for p in points:
           if sp.id == p.id:
-            logging.info("Found mandatory point:", str(p.id))
+            logging.info("Found mandatory point:" + str(p.id))
             found = True
             break
 
