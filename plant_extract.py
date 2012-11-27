@@ -35,7 +35,7 @@ class PlantExtract(object):
     self._parse()
     
   def _parse(self):
-    """Parse the plant extract document
+    """Parse the plant extract document (minus sunSpecData)
     """
     logging.debug("PlantExtract._parse()")
     env = self.envelope
