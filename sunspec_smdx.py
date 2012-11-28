@@ -45,12 +45,12 @@ class SMDX(object):
     try:
       return SMDX._cache[model_id]
     except KeyError:
-      logging.debug("New SMDX object being instantiated for: " + model_id)
+      logging.info("New SMDX object being instantiated for: " + model_id)
       # you must call __new__ on the base class
       x = super(SMDX, cls).__new__(cls)
       x.__init__(element, model_id)
       SMDX._cache[model_id] = x
-      print SMDX._cache
+      logging.info("SMDX Cache: " + str(SMDX._cache))
       return x
     
   def get_points(self):
@@ -61,7 +61,6 @@ class SMDX(object):
         self.points[p_id] = SMDXPoint(p)
     
     return self.points
-
 
   def get_mandatory_points(self):
     man_points = {}
@@ -80,11 +79,11 @@ class SMDXPoint(object):
   def __init__(self, element):
     element = element
     if (element is None) or (element.tag != 'point'):
-      logging.info("SMDXPoint objects must have a 'point' element")
+      logging.warning("SMDXPoint objects must have a 'point' element")
       return
     
     self.id     = element.get('id')
-    logging.info("SMDXPoint.__init__() self.id: " + self.id)
+    logging.debug("SMDXPoint.__init__() self.id: " + self.id)
     self.len    = element.get('len')
     self.offset = element.get('offset')
     self.type   = element.get('type')
@@ -96,7 +95,7 @@ class SMDXPoint(object):
     if mand is not None:
       self.mandatory = True if (mand.lower() == "true") else False
     
-    logging.info("SMDXPoint.__init__() self.mandatory: " + str(self.mandatory))
+    logging.debug("SMDXPoint.__init__() self.mandatory: " + str(self.mandatory))
 
 
 class SunSpecSMDXException(Exception):
