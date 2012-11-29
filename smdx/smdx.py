@@ -1,10 +1,13 @@
+from collections import defaultdict
+import hashlib
+import os
+import logging
+
 from lxml import etree
 from lxml import objectify
-from collections import defaultdict
-import hashlib, os, logging
 
 
-smdx_dir    = "smdx"
+smdx_dir    = "smdx/files"
 smdx_prefix = "smdx"
 smdx_ext    = ".xml"
 smdx_xsd    = "smdx.xsd"
@@ -19,57 +22,61 @@ METER_SINGLE_PHASE    = '201'
 
 
 class SMDX(object):
-  _cache={}
+    _cache={}
+
+    # TODO: Turn this into a factory returning the same SMDX if requested multiple times
+
+    def __init__(self, element, model_id):
+        logging.debug("SMDX.__init__()")
+        return
+        
+    def __new__(cls, element, model_id):
+        try:
+            return SMDX._cache[model_id]
+        except KeyError:
+            logging.info("New SMDX object being instantiated for: " + model_id)
+            # you must call __new__ on the base class
+            x = super(SMDX, cls).__new__(cls)
+
+            x.points = {}
+            x.smdx_tree = None
+            x.model_id = model_id
+            smdx_filename = smdx_prefix + "_" + str.rjust(str(x.model_id), 5, "0") + smdx_ext
+            print element, model_id, smdx_filename
+            parser = get_smdx_parser()
+            
+            try:
+              x.smdx_tree = objectify.parse(os.path.join(os.getcwd(), smdx_dir, smdx_filename), 
+                                            parser)
+            except IOError:
+              logging.error("IOError caught while opening " + smdx_filename)
+              
+            if (x.smdx_tree is None):
+              raise SunSpecSMDXException("SMDX object requires valid SMDX file: " + smdx_filename)
+    
+            x.__init__(element, model_id)
+            SMDX._cache[model_id] = x
+            logging.info("SMDX Cache: " + str(SMDX._cache))
+            
+            return x
+
+    def get_points(self):
+        root = self.smdx_tree.getroot()
+        for b in root.model.block:
+            for p in b.point:
+                p_id = p.get('id')
+                self.points[p_id] = SMDXPoint(p)
+    
+        return self.points
+
+    def get_mandatory_points(self):
+        man_points = {}
+        points = self.get_points()
+        for p in points.itervalues():
+            if p.mandatory:
+                man_points[p.id] = p
    
-  # TODO: Turn this into a factory returning the same SMDX if requested multiple times
-
-  def __init__(self, element, model_id):
-    self.points = {}
-    self.smdx_tree = None
-    self.model_id = model_id
-    smdx_filename = smdx_prefix + "_" + str.rjust(str(self.model_id), 5, "0") + smdx_ext
-
-    parser = get_smdx_parser()
-    
-    try:
-      self.smdx_tree = objectify.parse(os.path.join(os.getcwd(), smdx_dir, smdx_filename), 
-                                       parser)
-    except IOError:
-      logging.error("IOError caught while opening " + smdx_filename)
-      
-    if (self.smdx_tree is None):
-      raise SunSpecSMDXException("SMDX object requires valid SMDX file: " + smdx_filename)
-      return
-  
-  def __new__(cls, element, model_id):
-    try:
-      return SMDX._cache[model_id]
-    except KeyError:
-      logging.info("New SMDX object being instantiated for: " + model_id)
-      # you must call __new__ on the base class
-      x = super(SMDX, cls).__new__(cls)
-      x.__init__(element, model_id)
-      SMDX._cache[model_id] = x
-      logging.info("SMDX Cache: " + str(SMDX._cache))
-      return x
-    
-  def get_points(self):
-    root = self.smdx_tree.getroot()
-    for b in root.model.block:
-      for p in b.point:
-        p_id = p.get('id')
-        self.points[p_id] = SMDXPoint(p)
-    
-    return self.points
-
-  def get_mandatory_points(self):
-    man_points = {}
-    points = self.get_points()
-    for p in points.itervalues():
-      if p.mandatory:
-        man_points[p.id] = p
-   
-    return man_points
+        return man_points
 
 
 class SMDXPoint(object):
@@ -109,7 +116,8 @@ def get_smdx_parser():
   global smdx_schema_parser
   if (smdx_schema_parser is None):
     try:
-      schema_etree = etree.parse(os.path.join(os.getcwd(), smdx_dir, smdx_xsd))
+      schema_filename = os.path.join(os.getcwd(), smdx_dir, smdx_xsd)
+      schema_etree = etree.parse(schema_filename)
       schema = etree.XMLSchema(schema_etree)
       logging.info("get_smdx_parser() getting a global lxml.objectify SMDX parser")
       smdx_schema_parser = objectify.makeparser(schema = schema)
