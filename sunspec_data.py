@@ -1,10 +1,15 @@
+from collections import defaultdict
+import datetime
+import hashlib
+import os
+import logging
+import sys
+
 from lxml import etree
 from lxml import objectify
-from collections import defaultdict
-from sunspec_smdx import SMDX, SMDXPoint
-import datetime
-import hashlib, os, logging
-import sys
+
+from smdx.smdx import SMDX, SMDXPoint
+
 
 # logger = logging.getLogger('ped.ssd')
 
@@ -19,21 +24,27 @@ class SunSpecData(object):
     if self.element is None: 
       self.exists = False
       return
-    else: self.exists = True
+    else: 
+        self.exists = True
     
     # check for sunSpecData version, assume '1' if absent
     v = self.element.get('v')
-    if (v is not None): self.version = int(v)
-    else: self.version = 1
+    if (v is not None): 
+        self.version = int(v)
+    else: 
+        self.version = 1
     
     self.device_records = list()
     for d_record in self.element.iter(DeviceRecord.element_name):
       self.device_records.append(DeviceRecord(d_record))
+    
+    self.parsed = False
 
   def parse(self):
     logging.debug("SunSpecData.parse()")
     for dr in self.device_records:
       dr.parse()
+    self.parsed = True
 
 
   def get_points(self):
@@ -44,7 +55,7 @@ class SunSpecData(object):
     return all_points
 
 
-  def get_matching_points(self, point_id):
+  def _get_matching_points(self, point_id):
     '''Get a list of points which match the given point_id
     '''
     points = list()
@@ -54,34 +65,34 @@ class SunSpecData(object):
       if models is not None:
         for m in models:
           plist = m.get_matching_points(point_id)
-          if (plist is not None) and (len(plist) > 0):
+          if (plist is not None) and plist:
             points = points + plist
     return points
 
 
-  def get_points_in_period(self, startTime, endTime, point_id='All'):
-    '''Get a list of points which are between the startTime and endTime.
+  def get_points_in_period(self, start_time, end_time, point_id='All'):
+    '''Get a dictionary of matching points between the start_time and end_time.
+    
+       If both start_time and end_time are None, then unsorted points for entire time is returned.
     
        Arguments:
-       startTime -- the datetime describing the beginning of the period
-       endTime   -- the datetime describing the end of the period
+       start_time -- the datetime describing the beginning of the period
+       end_time   -- the datetime describing the end of the period
        point_id  -- the id of the Points to retrieve within the period
        
        Return:
        Points in the period as a time keyed dictionary of Points in a list
     '''
-    now = datetime.datetime.now()
-    if endTime is None:
-      endTime = now
-    if startTime is None:
-      startTime = now
-
-    logging.info("SunSpecData.get_points_in_period: " + str(startTime) +" > "+ str(endTime))
+    logging.info("SunSpecData.get_points_in_period: " + str(start_time) +
+                 " > " + str(end_time))
     
     if point_id is 'All':
       points = self.get_points()
     else:
-      points = self.get_matching_points(point_id)
+      points = self._get_matching_points(point_id)
+
+    if end_time is None and start_time is None:
+      return points
 
     period_points = defaultdict(list)
     for p in points:
@@ -137,7 +148,7 @@ class DeviceRecord(object):
 
     self._determine_id()
     time = get_attr(element, 't')
-    if (time is None) or (time is ''):
+    if time is None:
       raise SunSpecDataException("DeviceRecord 't' attribute is required.")
     else:
       # SunSpecData <d ... t="YYYY-MM-DDThh:mm:ssZ"
@@ -147,16 +158,16 @@ class DeviceRecord(object):
     for m in element.iter(Model.element_name):
         m_id = m.get('id')
         if (m_id is not None):
-          logging.info("DeviceRecord.__init__() adding model_id: " + m_id)
+          logging.debug("DeviceRecord.__init__() adding model_id: " + m_id)
           self.models.append(Model(m, m_id, self.time))
 
   def _determine_id(self):
     self.device_id_type = None
     gs = None
-    if (len(self.model) > 0 and len(self.manufacturer) > 0 and len(self.serial_number) > 0):
+    if self.model and self.manufacturer and self.serial_number:
       gs = "" + self.serial_number + self.model + self.manufacturer
       self.device_id_type = 'Common Block'
-    elif (len(self.logger_id) > 0 and len(self.device_id) > 0):
+    elif self.logger_id and self.device_id:
       gs = "" + self.device_id + self.logger_id
       self.device_id_type = 'Logger-specific, user-assigned'
 
@@ -200,7 +211,7 @@ class Model(object):
       self.id = int(id)
 
     self.smdx = SMDX(element, id)
-    logging.info('Model constructed for model_id:' + str(id))
+    logging.debug('Model constructed for model_id:' + str(id))
 
 
   def parse(self):
@@ -302,10 +313,10 @@ class SunSpecDataException(Exception):
 ####################
 # Utility functions
 def get_attr(element, attr_name):
-  attr_value = ''
-  if (element is None):
+  attr_value = None
+  if element is None:
     return attr_value
-  elif (element.get(attr_name) is not None):
+  elif element.get(attr_name):
     attr_value = element.get(attr_name)
   
   return attr_value
