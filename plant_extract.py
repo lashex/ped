@@ -18,6 +18,9 @@ xsd_dir = "xsd"
 
 
 class PlantExtract(object):
+    """ Process a Plant Extract Document and allow straightforward retrieval of information
+        from each of the standard blocks.
+    """
 
     def __init__(self, ped_file, xsd_file):
         logging.debug("PlantExtract.__init__()")
@@ -74,7 +77,7 @@ class PlantExtract(object):
         return
 
     def parse_data(self): 
-        if (self.sunspec_data.exists):
+        if self.sunspec_data.exists and !self.sunspec_data.parsed: 
             self.sunspec_data.parse()
 
     def tostring(self): 
