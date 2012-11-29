@@ -71,14 +71,16 @@ class SunSpecData(object):
 
 
   def get_points_in_period(self, start_time, end_time, point_id='All'):
-    '''Get a dictionary of matching points between the start_time and end_time.
+    '''Get a Point.time keyed dictionary of points that are between the start_time 
+       and end_time and that match the point_id.
     
-       If both start_time and end_time are None, then unsorted points for entire time is returned.
+       If both start_time and end_time are None, then points for the sunSpecData 
+       block's entire time range is returned.
     
        Arguments:
        start_time -- the datetime describing the beginning of the period
-       end_time   -- the datetime describing the end of the period
-       point_id  -- the id of the Points to retrieve within the period
+       end_time -- the datetime describing the end of the period
+       point_id -- the id of the Points to retrieve within the period
        
        Return:
        Points in the period as a time keyed dictionary of Points in a list
@@ -91,36 +93,14 @@ class SunSpecData(object):
     else:
       points = self._get_matching_points(point_id)
 
-    if end_time is None and start_time is None:
-      return points
-
     period_points = defaultdict(list)
     for p in points:
-      if startTime < p.time < endTime:
+      if end_time is None and start_time is None:
+        period_points[p.time].append(p) 
+      elif start_time < p.time < end_time:
         period_points[p.time].append(p) 
     print 'period points: ', period_points
     period_points = sorted(period_points.keys())
-
-
-  def get_time_keyed_points(self, point_id='All'):
-    '''Get a Point.time keyed dictionary with Points possessing the same time in a list.
-    
-       Arguments:
-       point_id -- the id of the Points to retrieve as a time keyed dict (default: All)
-       
-       Return:
-       Points as a time keyed dictionary of Points in a list
-    '''
-    logging.info("SunSpecData.get_time_series_points() point_id:" + str(point_id))
-    ts_points = defaultdict(list)
-    if point_id is 'All':
-      points = self.get_points()
-    else:
-      points = self.get_matching_points(point_id)
-    
-    for p in points:
-      ts_points[p.time].append(p)
-    return ts_points
 
 
   def tostring(self):
