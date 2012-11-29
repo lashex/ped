@@ -7,7 +7,8 @@ import datetime as dt
 from lxml import etree 
 from xml.etree.ElementTree import Element 
 
-from sunspec_data import SunSpecData 
+from sunspec_data import SunSpecData
+from ts_calc import TimeSeriesCalc
 
 
 xsd_filename = "sunspec_plant_extract.xsd" 
@@ -77,7 +78,7 @@ class PlantExtract(object):
         return
 
     def parse_data(self): 
-        if self.sunspec_data.exists and !self.sunspec_data.parsed: 
+        if self.sunspec_data.exists and not self.sunspec_data.parsed: 
             self.sunspec_data.parse()
 
     def tostring(self): 
@@ -209,7 +210,7 @@ class PlantExtractException(Exception):
         self.argument = argument
 
 
-####################
+#####################
 #   Utility functions
 def get_node_value(node, node_name): 
     node_value = None
@@ -222,7 +223,7 @@ def get_node_value(node, node_name):
     return node_value
 
 
-####################
+########################
 #   command line parsing
 if __name__ == '__main__':
     import argparse 
@@ -257,11 +258,11 @@ if __name__ == '__main__':
         >>>   print 'TotWh'
         ps = ped.sunspec_data.get_matching_points('TotWh') for p in ps: print
         p.tostring() print "Points in period"
-        #   startTime: 2012-10-28 22:00:59 endTime: 2012-10-28 22:03:00 > 5 or 6
+        #   start_time: 2012-10-28 22:00:59 end_time: 2012-10-28 22:03:00 > 5 or 6
         #   inclusive
-        startTime = dt.datetime(2012, 10, 28, 22, 00, 00) endTime   =
-        dt.datetime(2012, 10, 28, 22, 03, 00)
-        ped.sunspec_data.get_points_in_period(startTime, endTime, 'TotWh') 
+        start_time = dt.datetime(2012, 10, 28, 22, 00, 00) 
+        end_time = dt.datetime(2012, 10, 28, 22, 03, 00)
+        ped.sunspec_data.get_points_in_period(start_time, end_time, 'TotWh') 
         """
     else: 
         xsd_full_file = os.path.join(os.getcwd(), xsd_dir, xsd_filename)
@@ -273,3 +274,5 @@ if __name__ == '__main__':
         ped.parse_data() 
         print ped.sunspec_data.tostring()
         print "PlantExtract completed parsing of sunSpecData"
+        tsc = TimeSeriesCalc(ped)
+        print tsc.energy_sum()
