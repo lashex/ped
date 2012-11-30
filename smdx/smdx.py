@@ -13,23 +13,21 @@ smdx_ext    = ".xml"
 smdx_xsd    = "smdx.xsd"
 smdx_schema_parser = None
 
-# SMDX descriptive model id constants
-INVERTER_SINGLE_PHASE = '101'
-INVERTER_SPLIT_PHASE  = '102'
-INVERTER_THREE_PHASE  = '103'
-METER_SINGLE_PHASE    = '201'
-
 
 
 class SMDX(object):
-    _cache={}
+    # SMDX descriptive model id constants
+    INVERTER_SINGLE_PHASE = '101'
+    INVERTER_SPLIT_PHASE  = '102'
+    INVERTER_THREE_PHASE  = '103'
+    METER_SINGLE_PHASE    = '201'
 
-    # TODO: Turn this into a factory returning the same SMDX if requested multiple times
+    _cache={} # holds the cached SMDX object if instantiated multiple times
 
     def __init__(self, element, model_id):
         logging.debug("SMDX.__init__()")
         return
-        
+
     def __new__(cls, element, model_id):
         try:
             return SMDX._cache[model_id]
@@ -44,20 +42,20 @@ class SMDX(object):
             smdx_filename = smdx_prefix + "_" + str.rjust(str(x.model_id), 5, "0") + smdx_ext
             print element, model_id, smdx_filename
             parser = get_smdx_parser()
-            
+
             try:
-              x.smdx_tree = objectify.parse(os.path.join(os.getcwd(), smdx_dir, smdx_filename), 
+              x.smdx_tree = objectify.parse(os.path.join(os.getcwd(), smdx_dir, smdx_filename),
                                             parser)
             except IOError:
               logging.error("IOError caught while opening " + smdx_filename)
-              
+
             if (x.smdx_tree is None):
               raise SunSpecSMDXException("SMDX object requires valid SMDX file: " + smdx_filename)
-    
+
             x.__init__(element, model_id)
             SMDX._cache[model_id] = x
             logging.info("SMDX Cache: " + str(SMDX._cache))
-            
+
             return x
 
     def get_points(self):
@@ -66,7 +64,7 @@ class SMDX(object):
             for p in b.point:
                 p_id = p.get('id')
                 self.points[p_id] = SMDXPoint(p)
-    
+
         return self.points
 
     def get_mandatory_points(self):
@@ -75,7 +73,7 @@ class SMDX(object):
         for p in points.itervalues():
             if p.mandatory:
                 man_points[p.id] = p
-   
+
         return man_points
 
 
@@ -83,12 +81,21 @@ class SMDXPoint(object):
   '''SMDX Point class that understands points like:
     <point id="PhVphA" offset="8" type="uint16" sf="V_SF" units="V" mandatory="true" />
   '''
+
+  # list of convenient point ID values
+  TOTAL_ENERGY_EXPORTED = 'TotWhExp'
+  TOTAL_ENERGY_IMPORTED = 'TotWhImp'
+  POWER = 'W'
+  GLOBAL_HORIZONTAL_IRRADIANCE = 'GHI'
+  PLANE_OF_ARRAY_IRRADIANCE = 'POAI'
+  DIFFUSE_IRRADIANCE = 'DFI'
+
   def __init__(self, element):
     element = element
     if (element is None) or (element.tag != 'point'):
       logging.warning("SMDXPoint objects must have a 'point' element")
       return
-    
+
     self.id     = element.get('id')
     logging.debug("SMDXPoint.__init__() self.id: " + self.id)
     self.len    = element.get('len')
@@ -101,12 +108,12 @@ class SMDXPoint(object):
     mand = element.get('mandatory')
     if mand is not None:
       self.mandatory = True if (mand.lower() == "true") else False
-    
+
     logging.debug("SMDXPoint.__init__() self.mandatory: " + str(self.mandatory))
 
 
 class SunSpecSMDXException(Exception):
-  
+
   def __init__(self, argument):
     super(SunSpecSMDXException, self).__init__(argument)
     self.argument = argument
@@ -125,29 +132,29 @@ def get_smdx_parser():
       logging.error("IOError caught while opening " + schema_filename)
 
   return smdx_schema_parser
-    
+
 
 
 #     try:
 #       smdx_etree = etree.parse(os.path.join(os.getcwd(), smdx_dir, smdx_filename))
 #     except IOError:
 #       logging.warning("IOError caught while opening " + smdx_filename)
-# 
+#
 #     try:
 #       schema_etree = etree.parse(os.path.join(os.getcwd(), smdx_dir, smdx_xsd))
 #       schema = etree.XMLSchema(schema_etree)
 #     except IOError:
 #       logging.warning("IOError caught while opening " + smdx_xsd)
-#     
+#
 #     if (schema_etree is None) or (smdx_etree is None):
 #       return
 #     else:
 #       self.exists = True
 #       self.__valid(schema, smdx_etree)
-#       
+#
 #     smdx = SMDX(smdx_etree.getroot())
-# 
-# 
+#
+#
 #   def __valid(self, schema, smdx, assert_=False):
 #     """Determines if this SunSpecModel is valid XML in compliance with the SMDX XSD
 #     """
@@ -157,11 +164,11 @@ def get_smdx_parser():
 #     else:
 #       self.valid = schema.validate(smdx)
 #       return self.valid
-#       
+#
 #   def parse(self):
-#     
+#
 #     return
-# 
+#
 # class SMDX(object):
 #   def __init__(self, root):
 #     self.root = root
@@ -171,20 +178,20 @@ def get_smdx_parser():
 #       self.exists = True
 #       self.__parse()
 #       return
-#   
+#
 #   def __parse(self):
 #     """Parse the SMDX document
 #     """
 #     l = self.root.xpath('strings/model/label')
 #     self.label = l[0].text
-#     
+#
 #     self.points = defaultdict(list)
 #     point_elements = self.root.xpath('model//point')
 #     for p in point_elements:
 #       p_id = p.get('id')
 #       self.points[p_id].append(SMDXPoint(p))
-#       
-# 
+#
+#
 # class SMDXPoint(object):
 #   def __init__(self, element):
 #     e = element
@@ -193,5 +200,5 @@ def get_smdx_parser():
 #     self.offset = e.get('offset')
 #     self.type   = e.get('type')
 #     self.sf = e.get
-# 
+#
 #     return
