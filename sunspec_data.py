@@ -16,28 +16,28 @@ from smdx.smdx import SMDX, SMDXPoint
 
 class SunSpecData(object):
   element_name = 'sunSpecData'
-  
+
   def __init__(self, element):
     '''Initialize a SunSpecData object given the XML Element
     '''
     self.element = element
-    if self.element is None: 
+    if self.element is None:
       self.exists = False
       return
-    else: 
+    else:
         self.exists = True
-    
+
     # check for sunSpecData version, assume '1' if absent
     v = self.element.get('v')
-    if (v is not None): 
+    if (v is not None):
         self.version = int(v)
-    else: 
+    else:
         self.version = 1
-    
+
     self.device_records = list()
     for d_record in self.element.iter(DeviceRecord.element_name):
       self.device_records.append(DeviceRecord(d_record))
-    
+
     self.parsed = False
 
   def parse(self):
@@ -46,7 +46,6 @@ class SunSpecData(object):
       dr.parse()
     self.parsed = True
 
-
   def get_points(self):
     all_points = list()
     for dr in self.device_records:
@@ -54,12 +53,12 @@ class SunSpecData(object):
         all_points = all_points + model.points
     return all_points
 
-
   def _get_matching_points(self, point_id):
     '''Get a list of points which match the given point_id
     '''
     points = list()
-    logging.debug("SunSpecData.get_matching_points() looking for point_id:"+str(point_id))
+    logging.debug(''.join(["SunSpecData.get_matching_points() looking for point_id:",
+                  str(point_id)]))
     for dr in self.device_records:
       models = dr.models
       if models is not None:
@@ -69,25 +68,24 @@ class SunSpecData(object):
             points = points + plist
     return points
 
-
   def get_points_in_period(self, start_time, end_time, point_id='All'):
-    '''Get a Point.time keyed dictionary of points that are between the start_time 
+    '''Get a Point.time keyed dictionary of points that are between the start_time
        and end_time and that match the point_id.
-    
-       If both start_time and end_time are None, then points for the sunSpecData 
+
+       If both start_time and end_time are None, then points for the sunSpecData
        block's entire time range is returned.
-    
+
        Arguments:
        start_time -- the datetime describing the beginning of the period
        end_time -- the datetime describing the end of the period
        point_id -- the id of the Points to retrieve within the period
-       
+
        Return:
        Points in the period as a time keyed dictionary of Points in a list
     '''
     logging.info("SunSpecData.get_points_in_period: " + str(start_time) +
                  " > " + str(end_time))
-    
+
     if point_id is 'All':
       points = self.get_points()
     else:
@@ -96,16 +94,15 @@ class SunSpecData(object):
     period_points = defaultdict(list)
     for p in points:
       if end_time is None and start_time is None:
-        period_points[p.time].append(p) 
+        period_points[p.time].append(p)
       elif start_time < p.time < end_time:
-        period_points[p.time].append(p) 
+        period_points[p.time].append(p)
     print 'period points: ', period_points
     period_points = sorted(period_points.keys())
 
-
   def tostring(self):
-    return ''.join(['SunSpecData v:', str(self.version), 
-      ' point count: ', str(len(self.get_points()))])
+    return ''.join(['SunSpecData v:', str(self.version),
+                    ' point count: ', str(len(self.get_points()))])
 
 
 class DeviceRecord(object):
@@ -154,29 +151,29 @@ class DeviceRecord(object):
     if gs is None:
       s = "A Device must have a globally unique identifier, either man: mod: sn: or lid: id:"
       raise SunSpecDataException(s)
-    
+
     self.guid = int(hashlib.md5(gs).hexdigest(), 16)
     return
-    
+
   def parse(self):
     logging.debug("SunSpecData.DeviceRecord.parse()")
     for model in self.models:
       model.parse()
 
   def tostring(self):
-    s  = "Device" + os.linesep
+    s = "Device" + os.linesep
     s += " id_type:'" + self.device_id_type + "' guid:" + str(self.guid) + os.linesep
     s += " man:" + self.manufacturer + " mod:" + self.model + " sn:" + self.serial_number + os.linesep
-    s += " lid:" + self.logger_id + " ns:" + self.logger_id_namespace 
-    s += " id:"  + self.device_id + os.linesep
-    s += " if:"  + self.device_interface_id + " cid:" + self.correlation_id
-    
+    s += " lid:" + self.logger_id + " ns:" + self.logger_id_namespace
+    s += " id:" + self.device_id + os.linesep
+    s += " if:" + self.device_interface_id + " cid:" + self.correlation_id
+
     return s
 
 
 class Model(object):
   element_name = 'm'
-  
+
   def __init__(self, element, id, dr_time):
     self.dr_time = dr_time
     self.points = list()
@@ -184,7 +181,7 @@ class Model(object):
       raise SunSpecDataException("SunSpec model element is required for a Model")
     else:
       self.element = element
-    
+
     if (id is None):
       raise SunSpecDataException("SunSpec model element must have an id attribute")
     else:
@@ -193,14 +190,13 @@ class Model(object):
     self.smdx = SMDX(element, id)
     logging.debug('Model constructed for model_id:' + str(id))
 
-
   def parse(self):
     logging.debug("Model.parse() model_id:" + str(self.id))
 
     logging.info("Model.parse() instantiating Points")
     for p in self.element.iter(Point.element_name):
       self.points.append(Point(self, p))
-    
+
     smdx_points = self.smdx.get_points()
     logging.info("Model.parse() adding units from SMDXPoints to Points")
     for p in self.points:
@@ -208,34 +204,34 @@ class Model(object):
         logging.info("Point.id:" + str(p.id) + " found in SMDX.model_id: " + str(self.id))
         p.unit = smdx_points[p.id].units
       else:
-        logging.warning("Point.id:"+ str(p.id) + 
-                        " exists but shouldn't for SMDX.model_id: " + str(self.id))
+        logging.warning(''.join(["Point.id:", str(p.id),
+                        " exists but shouldn't for SMDX.model_id: ", str(self.id)]))
 
     mand_met = False
     if (len(self._has_mandatory_points()) == 0):
       mand_met = True
     logging.debug("Model.parse() has all mandatory points? " + str(mand_met))
-  
-  
+
   def get_matching_points(self, point_id):
     '''Get a list of points which match the given point_id
     '''
-    points = list() 
-    logging.info("Model.get_matching_points() looking for point_id:"+str(point_id))
+    points = list()
+    logging.info(''.join(["Model.get_matching_points() looking for point_id:",
+                 str(point_id)]))
     for p in self.points:
-      logging.debug("Model.get_matching_points() p.id:"+p.id +" given point_id:"+point_id)
+      logging.debug(''.join(["Model.get_matching_points() p.id:", p.id,
+                             " given point_id:", str(point_id)]))
       if p.id == point_id:
         points.append(p)
-    
-    return points
 
+    return points
 
   def _has_mandatory_points(self):
     man_points = self.smdx.get_mandatory_points()
     points = self.points
     logging.debug("Model._has_mandatory_points()")
     missing_mand = {}
-    
+
     for sp in man_points.itervalues():
       if sp.mandatory:
         found = False
@@ -246,16 +242,16 @@ class Model(object):
             break
 
         if not found:
-          logging.warning("Model.id:" + str(self.id) + 
+          logging.warning("Model.id:" + str(self.id) +
                           " missing mandatory SMDXPoint.id:" + sp.id)
           missing_mand[sp.id] = sp
-    
+
     return missing_mand
 
   def set_metadata(self, element):
-    
+
     return
-    
+
   def tostring(self):
     return ''.join(['Model.id:', str(self.id), ' dr_time:', str(self.dr_time)])
 
@@ -266,9 +262,9 @@ class Point(object):
   def __init__(self, model, element):
     self.model = model
     element = element
-    self.id    = element.get('id')
-    self.x     = element.get('x')
-    self.text  = element.text
+    self.id = element.get('id')
+    self.x = element.get('x')
+    self.text = element.text
     self.units = None
 
     time = element.get('t')
@@ -279,15 +275,15 @@ class Point(object):
       self.time = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
 
   def tostring(self):
-    return ''.join(['Point.id:', self.id, ' x:', str(self.x), ' text:', str(self.text), 
+    return ''.join(['Point.id:', self.id, ' x:', str(self.x), ' text:', str(self.text),
                     ' units:', str(self.units), ' t:', str(self.time)])
 
+
 class SunSpecDataException(Exception):
-  
+
   def __init__(self, argument):
     super(SunSpecDataException, self).__init__(argument)
     self.argument = argument
-
 
 
 ####################
@@ -298,5 +294,5 @@ def get_attr(element, attr_name):
     return attr_value
   elif element.get(attr_name):
     attr_value = element.get(attr_name)
-  
+
   return attr_value
