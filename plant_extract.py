@@ -279,4 +279,5 @@ if __name__ == '__main__':
         print ped.sunspec_data.tostring()
         print "PlantExtract completed parsing of sunSpecData"
         tsc = TimeSeriesCalc(ped)
-        print tsc.energy_exported_sum()
+        print tsc.energy()
+        print tsc.energy_exported()

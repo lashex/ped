@@ -20,16 +20,18 @@ class TimeSeriesCalc(object):
         self.ped = ped
         return
 
-    def energy_exported_sum(self, start_time=None, end_time=None):
-        sum = None
-        if self.ped:
-            self.ped.parse_data()
-            self.period_calc(Point.TOTAL_ENERGY_EXPORTED, SUM, start_time, end_time)
-        return 42
+    def energy(self, calc=AVG, start_time=None, end_time=None):
+        return self.period_calc(Point.ENERGY, calc, start_time, end_time)
+
+    def energy_exported(self, calc=AVG, start_time=None, end_time=None):
+        return self.period_calc(Point.TOTAL_ENERGY_EXPORTED, calc, start_time, end_time)
 
     def period_calc(self, point_id, calc=AVG, start_time=None, end_time=None):
-        ssd = self.ped.sunspec_data
-        points = ssd.get_points_in_period(point_id, start_time, end_time)
+        if self.ped:
+            ssd = self.ped.sunspec_data
+            self.ped.parse_data()
+            points = ssd.get_points_in_period(start_time, end_time, point_id)
+            print ' period calc:', points
         return
 
 ########################
