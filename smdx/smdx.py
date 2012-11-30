@@ -83,6 +83,7 @@ class SMDXPoint(object):
   '''
 
   # list of convenient point ID values
+  ENERGY = 'WH'
   TOTAL_ENERGY_EXPORTED = 'TotWhExp'
   TOTAL_ENERGY_IMPORTED = 'TotWhImp'
   POWER = 'W'
