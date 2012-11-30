@@ -1,4 +1,5 @@
 from collections import defaultdict
+from operator import attrgetter
 import datetime
 import hashlib
 import os
@@ -69,7 +70,7 @@ class SunSpecData(object):
     return points
 
   def get_points_in_period(self, start_time, end_time, point_id='All'):
-    '''Get a Point.time keyed dictionary of points that are between the start_time
+    '''Get a Point.time sorted list of points that are between the start_time
        and end_time and that match the point_id.
 
        If both start_time and end_time are None, then points for the sunSpecData
@@ -81,24 +82,25 @@ class SunSpecData(object):
        point_id -- the id of the Points to retrieve within the period
 
        Return:
-       Points in the period as a time keyed dictionary of Points in a list
+       Points within the period as time sorted Points in a list
     '''
     logging.info("SunSpecData.get_points_in_period: " + str(start_time) +
-                 " > " + str(end_time))
+                 " > " + str(end_time) + " point_id: " + point_id)
 
     if point_id is 'All':
       points = self.get_points()
     else:
       points = self._get_matching_points(point_id)
 
-    period_points = defaultdict(list)
+    period_points = list()
     for p in points:
       if end_time is None and start_time is None:
-        period_points[p.time].append(p)
+        period_points.append(p)
       elif start_time < p.time < end_time:
-        period_points[p.time].append(p)
-    print 'period points: ', period_points
-    period_points = sorted(period_points.keys())
+        period_points.append(p)
+    logging.info('Period points: ' + str(period_points))
+    period_points = sorted(period_points, key=attrgetter('time'))
+    return period_points
 
   def tostring(self):
     return ''.join(['SunSpecData v:', str(self.version),
