@@ -21,4 +21,5 @@ setup(name='pyped',
                                 ...]),
                   ('xsd', ['xsd/smdx.xsd', 'xsd/sunspec_data.xsd', 'xsd/sunspec_ws.xsd',
                            'xsd/sunspec_plant_extract.xsd'])],
+      install_requires=["lxml >= 3.0.1"]
       )
