@@ -1,11 +1,11 @@
 
 
-from smdx.smdx import SMDXPoint as Point
+from smdx import SMDXPoint as Point
 
-MIN = 'Minimum'  # determine the minimum value over a period of time
-MAX = 'Maximum'  # determine the maximum value over a period of time
-AVG = 'Average'  # determine an average value over a period of time
-SUM = 'Summation'  # perform a summation over a period of time
+ts_MIN = min  # determine the minimum value over a period of time
+ts_MAX = max  # determine the maximum value over a period of time
+ts_AVG = avg  # determine an average value over a period of time
+ts_SUM = sum  # perform a summation over a period of time
 
 INSTANT = 'Instantaeous'
 BIN = 'Binned'
