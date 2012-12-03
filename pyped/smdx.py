@@ -7,10 +7,11 @@ from lxml import etree
 from lxml import objectify
 
 
-smdx_dir    = "smdx/files"
+smdx_dir = "smdx-files"
 smdx_prefix = "smdx"
-smdx_ext    = ".xml"
-smdx_xsd    = "smdx.xsd"
+smdx_ext = ".xml"
+xsd_dir = "xsd"
+smdx_xsd = "smdx.xsd"
 smdx_schema_parser = None
 
 
@@ -124,7 +125,7 @@ def get_smdx_parser():
   global smdx_schema_parser
   if (smdx_schema_parser is None):
     try:
-      schema_filename = os.path.join(os.getcwd(), smdx_dir, smdx_xsd)
+      schema_filename = os.path.join(os.getcwd(), xsd_dir, smdx_xsd)
       schema_etree = etree.parse(schema_filename)
       schema = etree.XMLSchema(schema_etree)
       logging.info("get_smdx_parser() getting a global lxml.objectify SMDX parser")

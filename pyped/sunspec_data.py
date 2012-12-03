@@ -9,7 +9,7 @@ import sys
 from lxml import etree
 from lxml import objectify
 
-from smdx.smdx import SMDX, SMDXPoint
+from smdx import SMDX, SMDXPoint
 
 
 # logger = logging.getLogger('ped.ssd')
