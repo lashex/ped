@@ -55,10 +55,10 @@ class TimeSeriesCalc(object):
             Note: If both start_time and end_time are None, then points for the sunSpecData
             block's entire time range are returned.
 
-            point_id – the id of the Points to retrieve within the period
-            calc – the ts_* calculation to perform upon the retrieved points (default: ts_AVG)
-            start_time – the datetime describing the beginning of the period
-            end_time – the datetime describing the end of the period
+            point_id - the id of the Points to retrieve within the period
+            calc - the ts_* calculation to perform upon the retrieved points (default: ts_AVG)
+            start_time - the datetime describing the beginning of the period
+            end_time - the datetime describing the end of the period
 
             Return:
             The calculated result

@@ -79,9 +79,9 @@ class SunSpecData(object):
             block's entire time range are returned.
 
             Arguments:
-            start_time – the datetime describing the beginning of the period
-            end_time – the datetime describing the end of the period
-            point_id – the id of the Points to retrieve within the period (default: "All")
+            start_time - the datetime describing the beginning of the period
+            end_time - the datetime describing the end of the period
+            point_id - the id of the Points to retrieve within the period (default: "All")
 
             Return:
             Points within the period as time sorted Points in a list
