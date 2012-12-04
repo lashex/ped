@@ -79,39 +79,46 @@ class SMDX(object):
 
 
 class SMDXPoint(object):
-  '''SMDX Point class that understands points like:
+    '''SMDX Point class that understands points like:
     <point id="PhVphA" offset="8" type="uint16" sf="V_SF" units="V" mandatory="true" />
-  '''
+    '''
 
-  # list of convenient point ID values
-  ENERGY = 'WH'
-  TOTAL_ENERGY_EXPORTED = 'TotWhExp'
-  TOTAL_ENERGY_IMPORTED = 'TotWhImp'
-  POWER = 'W'
-  GLOBAL_HORIZONTAL_IRRADIANCE = 'GHI'
-  PLANE_OF_ARRAY_IRRADIANCE = 'POAI'
-  DIFFUSE_IRRADIANCE = 'DFI'
+    # list of convenient point ID values
+    ENERGY = 'WH'
+    TOTAL_ENERGY_EXPORTED = 'TotWhExp'
+    TOTAL_ENERGY_IMPORTED = 'TotWhImp'
+    POWER = 'W'
+    GLOBAL_HORIZONTAL_IRRADIANCE = 'GHI'
+    PLANE_OF_ARRAY_IRRADIANCE = 'POAI'
+    DIFFUSE_IRRADIANCE = 'DFI'
 
-  def __init__(self, element):
-    element = element
-    if (element is None) or (element.tag != 'point'):
-      logging.warning("SMDXPoint objects must have a 'point' element")
-      return
+    FLOAT32 = 'float32'
+    INT16 = 'int16'
+    UINT16 = 'unint16'
+    INT32 = 'int32'
+    ACC32 = 'acc32'
 
-    self.id     = element.get('id')
-    logging.debug("SMDXPoint.__init__() self.id: " + self.id)
-    self.len    = element.get('len')
-    self.offset = element.get('offset')
-    self.type   = element.get('type')
-    self.sf     = element.get('sf')
-    self.units  = element.get('units')
-    self.access = element.get('access')
-    self.mandatory = False
-    mand = element.get('mandatory')
-    if mand is not None:
-      self.mandatory = True if (mand.lower() == "true") else False
+    def __init__(self, element):
+        element = element
+        if (element is None) or (element.tag != 'point'):
+            logging.warning("SMDXPoint objects must have a 'point' element")
+            return
 
-    logging.debug("SMDXPoint.__init__() self.mandatory: " + str(self.mandatory))
+        self.id = element.get('id')
+        logging.debug("SMDXPoint.__init__() self.id: " + self.id)
+        self.len = element.get('len')
+        self.offset = element.get('offset')
+        self.type = element.get('type')
+        self.sf = element.get('sf')
+        self.units = element.get('units')
+        self.access = element.get('access')
+        self.value = element.text
+        self.mandatory = False
+        mand = element.get('mandatory')
+        if mand is not None:
+            self.mandatory = True if (mand.lower() == "true") else False
+
+        logging.debug("SMDXPoint.__init__() self.mandatory: " + str(self.mandatory))
 
 
 class SunSpecSMDXException(Exception):
