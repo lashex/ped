@@ -19,9 +19,9 @@ xsd_dir = "xsd"
 
 
 class PlantExtract(object):
-    """ Process a Plant Extract Document and allow straightforward retrieval of information
+    ''' Process a Plant Extract Document and allow straightforward retrieval of information
         from each of the standard blocks.
-    """
+    '''
 
     def __init__(self, ped_file, xsd_file):
         logging.debug("PlantExtract.__init__()")
@@ -280,4 +280,4 @@ if __name__ == '__main__':
         print ">> PlantExtract completed parsing of sunSpecData"
         tsc = TimeSeriesCalc(ped)
         print tsc.energy()
-#        print tsc.energy_exported()
+        print tsc.energy_exported()

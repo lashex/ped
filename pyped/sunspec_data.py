@@ -71,19 +71,20 @@ class SunSpecData(object):
         return points
 
     def get_points_in_period(self, start_time, end_time, point_id='All'):
-        '''Get a Point.time sorted list of points that are between the start_time
-           and end_time and that match the point_id.
+        ''' Get a Point.time sorted list of points that are between the start_time
+            and end_time and that match the point_id.
 
-           If both start_time and end_time are None, then points for the sunSpecData
-           block's entire time range are returned.
+            Note: If both start_time and end_time are None, then points for the
+            sunSpecData
+            block's entire time range are returned.
 
-           Arguments:
-           start_time -- the datetime describing the beginning of the period
-           end_time -- the datetime describing the end of the period
-           point_id -- the id of the Points to retrieve within the period
+            Arguments:
+            start_time – the datetime describing the beginning of the period
+            end_time – the datetime describing the end of the period
+            point_id – the id of the Points to retrieve within the period (default: "All")
 
-           Return:
-           Points within the period as time sorted Points in a list
+            Return:
+            Points within the period as time sorted Points in a list
         '''
         logging.info("SunSpecData.get_points_in_period: " + str(start_time) +
                      " > " + str(end_time) + " point_id: " + point_id)
