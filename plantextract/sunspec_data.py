@@ -19,8 +19,8 @@ class SunSpecData(object):
   element_name = 'sunSpecData'
 
   def __init__(self, element):
-    '''Initialize a SunSpecData object given the XML Element
-    '''
+    """Initialize a SunSpecData object given the XML Element
+    """
     self.element = element
     if self.element is None:
       self.exists = False
@@ -30,7 +30,7 @@ class SunSpecData(object):
 
     # check for sunSpecData version, assume '1' if absent
     v = self.element.get('v')
-    if (v is not None):
+    if v is not None:
         self.version = int(v)
     else:
         self.version = 1
@@ -55,8 +55,8 @@ class SunSpecData(object):
     return all_points
 
   def _get_matching_points(self, point_id):
-    '''Get a list of points which match the given point_id
-    '''
+    """Get a list of points which match the given point_id
+    """
     points = list()
     logging.debug(''.join(["SunSpecData.get_matching_points() looking for point_id:",
                   str(point_id)]))
@@ -70,7 +70,7 @@ class SunSpecData(object):
     return points
 
   def get_points_in_period(self, start_time, end_time, point_id='All'):
-    '''Get a Point.time sorted list of points that are between the start_time
+    """Get a Point.time sorted list of points that are between the start_time
        and end_time and that match the point_id.
 
        If both start_time and end_time are None, then points for the sunSpecData
@@ -83,7 +83,7 @@ class SunSpecData(object):
 
        Return:
        Points within the period as time sorted Points in a list
-    '''
+    """
     logging.info("SunSpecData.get_points_in_period: " + str(start_time) +
                  " > " + str(end_time) + " point_id: " + point_id)
 
@@ -136,7 +136,7 @@ class DeviceRecord(object):
     self.models = list()
     for m in element.iter(Model.element_name):
         m_id = m.get('id')
-        if (m_id is not None):
+        if m_id is not None:
           logging.debug("DeviceRecord.__init__() adding model_id: " + m_id)
           self.models.append(Model(m, m_id, self.time))
 
@@ -179,12 +179,12 @@ class Model(object):
   def __init__(self, element, id, dr_time):
     self.dr_time = dr_time
     self.points = list()
-    if (element is None):
+    if element is None:
       raise SunSpecDataException("SunSpec model element is required for a Model")
     else:
       self.element = element
 
-    if (id is None):
+    if id is None:
       raise SunSpecDataException("SunSpec model element must have an id attribute")
     else:
       self.id = int(id)
@@ -210,13 +210,13 @@ class Model(object):
                         " exists but shouldn't for SMDX.model_id: ", str(self.id)]))
 
     mand_met = False
-    if (len(self._has_mandatory_points()) == 0):
+    if len(self._has_mandatory_points()) == 0:
       mand_met = True
     logging.debug("Model.parse() has all mandatory points? " + str(mand_met))
 
   def get_matching_points(self, point_id):
-    '''Get a list of points which match the given point_id
-    '''
+    """Get a list of points which match the given point_id
+    """
     points = list()
     logging.info(''.join(["Model.get_matching_points() looking for point_id:",
                  str(point_id)]))

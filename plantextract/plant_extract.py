@@ -5,7 +5,6 @@ import logging
 import datetime as dt
 
 from lxml import etree
-from xml.etree.ElementTree import Element
 
 from sunspec_data import SunSpecData
 from ts_calc import TimeSeriesCalc
@@ -40,7 +39,7 @@ class PlantExtract(object):
         self._parse()
 
     def _parse(self):
-        '''Parse the plant extract document (minus sunSpecData)'''
+        """Parse the plant extract document (minus sunSpecData)"""
         logging.debug("PlantExtract._parse()")
         env = self.envelope
         time = env.get('t')
@@ -52,21 +51,21 @@ class PlantExtract(object):
 
     #   check for sunSpecPlantExtract version, assume '1' if absent
         v = env.get('v')
-        if (v is not None):
+        if v is not None:
             self.version = int(v)
         else:
             self.version = 1
 
     #   check for sunSpecPlantExtract seqId, assume '1' if absent
         sid = env.get('seqId')
-        if (sid is not None):
+        if sid is not None:
             self.seqId = int(sid)
         else:
             self.seqId = 1
 
     #   check for sunSpecPlantExtract lastSeqId, assume '1' if absent
         lid = env.get('lastSeqId')
-        if (lid is not None):
+        if lid is not None:
             self.lastSeqId = int(lid)
         else:
             self.lastSeqId = 1
@@ -84,17 +83,17 @@ class PlantExtract(object):
             self.sunspec_data.parse()
 
     def tostring(self):
-        '''Produces a string representation of the Plant Extract standard blocks '''
+        """Produces a string representation of the Plant Extract standard blocks """
         return ''.join(['PlantExtract v:', str(self.version), ' t:', str(self.time),
                         ' seqId:', str(self.seqId), ' lastSeqId:', str(self.lastSeqId)])
 
     def last(self):
-        '''Determines if this Plant Extract is the last extract in a set
-        '''
+        """Determines if this Plant Extract is the last extract in a set
+        """
         return self.seqId == self.lastSeqId
 
     def valid(self, assert_=False):
-        '''Determines if this Plant Extract is valid XML in compliance with the XSD'''
+        """Determines if this Plant Extract is valid XML in compliance with the XSD"""
         if assert_:
             self.schema.assert_(self.tree)
             self.valid = True
@@ -119,7 +118,7 @@ class Plant(object):
             self.id = UUID(plant_id)
 
         v = pe.get('v')
-        if (v is not None):
+        if v is not None:
             self.version = int(v)
 
         self.locale = pe.get('locale')
@@ -127,7 +126,7 @@ class Plant(object):
         self.description = get_node_value(pe, 'description')
         self.notes = get_node_value(pe, 'notes')
         ad = get_node_value(pe, 'activationDate')
-        if (ad is not None):
+        if ad is not None:
             self.activation_date = dt.datetime.strptime(ad, '%Y-%m-%d')
 
         self.location = Location(pe.find(Location.element_name))
@@ -138,7 +137,7 @@ class Plant(object):
             self.participants.append(Participant(participant))
 
     def tostring(self):
-        '''Produces a string representation of some parsed Plant values '''
+        """Produces a string representation of some parsed Plant values """
         return ''.join(["Plant id:", self.id.hex, ", v:", str(self.version),
                         ", name:", self.name])
 
@@ -148,7 +147,7 @@ class PropertyContainer(object):
     def __init__(self, my_element):
         self.properties = defaultdict(list)
         self.element = my_element
-        if (self.element is not None):
+        if self.element is not None:
             for property in self.element.iter(Property.element_name):
                 prop_id = property.get('id')
                 prop_type = property.get('type')
