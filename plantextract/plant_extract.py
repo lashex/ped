@@ -7,7 +7,7 @@ import datetime as dt
 from lxml import etree
 
 from sunspec_data import SunSpecData
-from ts_calc import TimeSeriesCalc
+from ts_calc import TimeSeriesCalc, ts_SUM
 
 
 xsd_filename = "sunspec_plant_extract.xsd"
@@ -18,9 +18,9 @@ xsd_dir = "xsd"
 
 
 class PlantExtract(object):
-    """ Process a Plant Extract Document and allow straightforward retrieval of information
+    ''' Process a Plant Extract Document and allow straightforward retrieval of information
         from each of the standard blocks.
-    """
+    '''
 
     def __init__(self, ped_file, xsd_file):
         logging.debug("PlantExtract.__init__()")
@@ -248,7 +248,7 @@ if __name__ == '__main__':
 
     if args.loglevel is not None:
         loglevel = args.loglevel.upper()
-        print "Setting loglevel to: " + loglevel
+        print ">> Setting loglevel to: " + loglevel
         logging.getLogger().setLevel(loglevel)
 
     if args.activate_tests is True:
@@ -271,12 +271,12 @@ if __name__ == '__main__':
         xsd_full_file = os.path.join(os.getcwd(), xsd_dir, xsd_filename)
         ped = PlantExtract(args.ped[0], xsd_full_file)
         print ped.tostring()
-        print "PlantExtract Plant"
+        print ">> PlantExtract Plant"
         print ped.plant.tostring()
-        print "PlantExtract parsing sunSpecData"
+        print ">> PlantExtract parsing sunSpecData"
         ped.parse_data()
         print ped.sunspec_data.tostring()
-        print "PlantExtract completed parsing of sunSpecData"
+        print ">> PlantExtract completed parsing of sunSpecData"
         tsc = TimeSeriesCalc(ped)
         print tsc.energy()
         print tsc.energy_exported()
