@@ -1,2 +1,2 @@
 include README.txt
-recursive-include *.xml *.xsd
+recursive-include plantextract *.xsd smdx*.xml

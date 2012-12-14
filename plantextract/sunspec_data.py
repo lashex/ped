@@ -17,7 +17,6 @@ from smdx import SMDXPoint as SP
 
 
 class SunSpecData(object):
-<<<<<<< HEAD:plantextract/sunspec_data.py
   element_name = 'sunSpecData'
 
   def __init__(self, element):
@@ -238,87 +237,7 @@ class Model(object):
 
     for sp in man_points.itervalues():
       if sp.mandatory:
-        found = False
-=======
-    element_name = 'sunSpecData'
-
-    def __init__(self, element):
-        '''Initialize a SunSpecData object given the XML Element
-        '''
-        self.element = element
-        if self.element is None:
-            self.exists = False
-            return
-        else:
-            self.exists = True
-
-        # check for sunSpecData version, assume '1' if absent
-        v = self.element.get('v')
-        if (v is not None):
-            self.version = int(v)
-        else:
-            self.version = 1
-
-        self.device_records = list()
-        for d_record in self.element.iter(DeviceRecord.element_name):
-            self.device_records.append(DeviceRecord(d_record))
-
-        self.parsed = False
-
-    def parse(self):
-        logging.debug("SunSpecData.parse()")
-        for dr in self.device_records:
-            dr.parse()
-        self.parsed = True
-
-    def get_points(self):
-        all_points = list()
-        for dr in self.device_records:
-            for model in dr.models:
-                all_points = all_points + model.points
-        return all_points
-
-    def _get_matching_points(self, point_id):
-        '''Get a list of points which match the given point_id
-        '''
-        points = list()
-        logging.debug(''.join(["SunSpecData.get_matching_points() looking for point_id:",
-                      str(point_id)]))
-        for dr in self.device_records:
-            models = dr.models
-            if models is not None:
-                for m in models:
-                    plist = m.get_matching_points(point_id)
-                    if (plist is not None) and plist:
-                        points = points + plist
-        return points
-
-    def get_points_in_period(self, start_time, end_time, point_id='All'):
-        ''' Get a Point.time sorted list of points that are between the start_time
-            and end_time and that match the point_id.
-
-            Note: If both start_time and end_time are None, then points for the
-            sunSpecData
-            block's entire time range are returned.
-
-            Arguments:
-            start_time - the datetime describing the beginning of the period
-            end_time - the datetime describing the end of the period
-            point_id - the id of the Points to retrieve within the period (default: "All")
-
-            Return:
-            Points within the period as time sorted Points in a list
-        '''
-        logging.info("SunSpecData.get_points_in_period: " + str(start_time) +
-                     " > " + str(end_time) + " point_id: " + point_id)
-
-        if point_id is 'All':
-            points = self.get_points()
-        else:
-            points = self._get_matching_points(point_id)
-
-        period_points = list()
->>>>>>> 90865ea1a0faad210af0f743e0cc8988f47d82f3:pyped/sunspec_data.py
+#        found = False
         for p in points:
             if (end_time is None) and (start_time is None):
                 period_points.append(p)
