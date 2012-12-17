@@ -1,2 +1,3 @@
 include README.txt
+include CHANGES.txt
 recursive-include plantextract *.xsd smdx*.xml

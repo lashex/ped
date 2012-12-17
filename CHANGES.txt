@@ -1,0 +1,3 @@
+0.2.1 -- works in a much more friendly fashion.
+  plantextract package now has a ''ped.py'' module instead of using a redundant name.
+  XSDs are just loaded locally by ''ped.py'' and ''smdx.py'' without needing to be passed in.
