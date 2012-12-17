@@ -35,9 +35,9 @@ BIN = 'Binned'
 
 
 class TimeSeriesCalc(object):
-    ''' Time Series calculator that processes Plant Extract Documents'
+    """ Time Series calculator that processes Plant Extract Documents'
         sunSpecData blocks
-    '''
+    """
     def __init__(self, ped):
         self.ped = ped
         return
@@ -50,7 +50,7 @@ class TimeSeriesCalc(object):
                                 start_time, end_time)
 
     def period_calc(self, point_id, calc=ts_AVG, start_time=None, end_time=None):
-        ''' Perform given calculation upon the Points found within the period.
+        """ Perform given calculation upon the Points found within the period.
 
             Note: If both start_time and end_time are None, then points for the sunSpecData
             block's entire time range are returned.
@@ -62,7 +62,7 @@ class TimeSeriesCalc(object):
 
             Return:
             The calculated result
-        '''
+        """
         if self.ped:
             ssd = self.ped.sunspec_data
             self.ped.parse_data()

@@ -7,7 +7,7 @@ from lxml import etree
 from lxml import objectify
 
 
-smdx_dir = "smdx-files"
+smdx_dir = "smdx"
 smdx_prefix = "smdx"
 smdx_ext = ".xml"
 xsd_dir = "xsd"
@@ -79,9 +79,9 @@ class SMDX(object):
 
 
 class SMDXPoint(object):
-    '''SMDX Point class that understands points like:
+    """SMDX Point class that understands points like:
     <point id="PhVphA" offset="8" type="uint16" sf="V_SF" units="V" mandatory="true" />
-    '''
+    """
 
     # list of convenient point ID values
     ENERGY = 'WH'

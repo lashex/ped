@@ -18,9 +18,9 @@ xsd_dir = "xsd"
 
 
 class PlantExtract(object):
-    ''' Process a Plant Extract Document and allow straightforward retrieval of information
+    """ Process a Plant Extract Document and allow straightforward retrieval of information
         from each of the standard blocks.
-    '''
+    """
 
     def __init__(self, ped_file, xsd_file):
         logging.debug("PlantExtract.__init__()")

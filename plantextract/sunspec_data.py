@@ -1,13 +1,8 @@
-from collections import defaultdict
 from operator import attrgetter
 import datetime
 import hashlib
 import os
 import logging
-import sys
-
-from lxml import etree
-from lxml import objectify
 
 from smdx import SMDX
 from smdx import SMDXPoint as SP
@@ -419,7 +414,7 @@ class Point(object):
             # SunSpecData <p ... t="YYYY-MM-DDThh:mm:ssZ"
             self.time = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
 
-    def set_type(self, type):  # change to python attribute oriented setter!
+    def set_type(self, type):  # TODO change to python attribute oriented setter!
         self.type = type
         logging.info("Point.set_type() id:", self.id, " type:", self.type)
         if (self.type == SP.UINT16) or (self.type == SP.INT16) or (self.type == SP.INT32):
