@@ -22,9 +22,11 @@ class PlantExtract(object):
         from each of the standard blocks.
     """
 
-    def __init__(self, ped_file, xsd_file):
+    def __init__(self, ped_file):
         logging.debug("PlantExtract.__init__()")
         # open file and validate
+        this_dir, this_filename = os.path.split(__file__)
+        xsd_file = os.path.join(this_dir, xsd_dir, xsd_filename)
         self.ped_file = ped_file
         self.tree = etree.parse(self.ped_file)
         schema_doc = etree.parse(xsd_file)
@@ -268,8 +270,8 @@ if __name__ == '__main__':
         ped.sunspec_data.get_points_in_period(start_time, end_time, 'TotWh')
         """
     else:
-        xsd_full_file = os.path.join(os.getcwd(), xsd_dir, xsd_filename)
-        ped = PlantExtract(args.ped[0], xsd_full_file)
+        # xsd_full_file = os.path.join(os.getcwd(), xsd_dir, xsd_filename)
+        ped = PlantExtract(args.ped[0])
         print ped.tostring()
         print ">> PlantExtract Plant"
         print ped.plant.tostring()

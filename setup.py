@@ -2,7 +2,7 @@ import os
 from distutils.core import setup
 from setuptools import find_packages
 
-version = '0.2.0'
+version = '0.2.1'
 README = os.path.join(os.path.dirname(__file__), 'README.txt')
 long_description = open(README).read() + 'nn'
 
@@ -12,7 +12,8 @@ setup(name='plantextract',
       long_description = long_description,
       author='Brett Francis',
       url='https://github.com/lashex/ped.git',
-      packages=find_packages(),
+      packages=['plantextract'],
+      # packages=find_packages(),
       include_package_data=True,
       install_requires=['lxml >= 3.0'],
       keywords = "sunspec plant extract",

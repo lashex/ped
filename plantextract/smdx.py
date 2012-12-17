@@ -45,13 +45,14 @@ class SMDX(object):
             parser = get_smdx_parser()
 
             try:
-              x.smdx_tree = objectify.parse(os.path.join(os.getcwd(), smdx_dir, smdx_filename),
-                                            parser)
+                this_dir, this_filename = os.path.split(__file__)
+                x.smdx_tree = objectify.parse(os.path.join(this_dir, smdx_dir, smdx_filename),
+                                              parser)
             except IOError:
-              logging.error("IOError caught while opening " + smdx_filename)
+                logging.error("IOError caught while opening " + smdx_filename)
 
             if (x.smdx_tree is None):
-              raise SunSpecSMDXException("SMDX object requires valid SMDX file: " + smdx_filename)
+                raise SunSpecSMDXException("SMDX object requires valid SMDX file: " + smdx_filename)
 
             x.__init__(element, model_id)
             SMDX._cache[model_id] = x
