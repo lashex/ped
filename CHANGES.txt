@@ -1,3 +1,8 @@
+0.2.2 -- first round of getting ts_calc working
+* fixed sunspec_data.Point.typ property setting that takes into account SunSpec
+  SMDX types, to convert the Point.value into the correct Python typed value.
+  With Point.type and Point.value fixed now the ts_calc calculations work
+
 0.2.1 -- works in a much more friendly fashion.
-  plantextract package now has a ''ped.py'' module instead of using a redundant name.
-  XSDs are just loaded locally by ''ped.py'' and ''smdx.py'' without needing to be passed in.
+* plantextract package now has a 'ped.py' module instead of using a redundant name.
+* XSDs are just loaded locally by 'ped.py' and 'smdx.py' without needing to be passed in.
