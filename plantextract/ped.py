@@ -7,6 +7,7 @@ import datetime as dt
 from lxml import etree
 
 from sunspec_data import SunSpecData
+from smdx import SMDX
 from ts_calc import TimeSeriesCalc, ts_SUM
 
 
@@ -280,5 +281,7 @@ if __name__ == '__main__':
         print ped.sunspec_data.tostring()
         print ">> PlantExtract completed parsing of sunSpecData"
         tsc = TimeSeriesCalc(ped)
-        print tsc.energy()
-        print tsc.energy_exported()
+        print ">> energy calculation from all INVERTER_SINGLE_PHASE Models"
+        print tsc.energy(SMDX.INVERTER_SINGLE_PHASE)
+        print ">> energy exported calculation from all INVERTER_SINGLE_PHASE Models"
+        print tsc.energy_exported(SMDX.INVERTER_SINGLE_PHASE)
