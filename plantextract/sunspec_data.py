@@ -204,6 +204,7 @@ class Model(object):
       if p.id in smdx_points:
         logging.info("Point.id:" + str(p.id) + " found in SMDX.model_id: " + str(self.id))
         p.unit = smdx_points[p.id].units
+        p.type = smdx_points[p.id].type
       else:
         logging.warning(''.join(["Point.id:", str(p.id),
                         " exists but shouldn't for SMDX.model_id: ", str(self.id)]))
@@ -249,11 +250,8 @@ class Model(object):
 
     return missing_mand
 
-    def set_metadata(self, element):
-        return
-
-    def tostring(self):
-        return ''.join(['Model.id:', str(self.id), ' dr_time:', str(self.dr_time)])
+  def tostring(self):
+      return ''.join(['Model.id:', str(self.id), ' dr_time:', str(self.dr_time)])
 
 
 class Point(object):
@@ -279,11 +277,14 @@ class Point(object):
 
     def set_type(self, type_value):
         self._type = type_value
+        print self.id
         logging.info("Point.set_type() id:", self.id, " type:", self._type)
-        if (self._type == SP.UINT16) or (self._type == SP.INT16) or (self._type == SP.INT32):
-            self.value = int(self.value)
-        elif self._type == SP.FLOAT32 or self._type == SP.ACC32:
-            self.value = float(self.value)
+        if self._type == SP.UINT16 or self._type == SP.INT16 \
+            or self._type == SP.INT32 or self._type == SP.ACC16 \
+            or self._type == SP.ACC32:
+                self.value = int(self.value) # Convert into 32 bit signed
+        elif self._type == SP.FLOAT32:
+            self.value = float(self.value)   # Convert into 64 bit float
         return
 
     type = property(get_type, set_type)
