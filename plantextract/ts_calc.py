@@ -1,22 +1,21 @@
 
-
 from smdx import SMDXPoint
 
 
 def _minimum(points):
-    return min(item.value for item in points)
+    return min(p.value for p in points)
 
 
 def _maximum(points):
-    return max(item.value for item in points)
+    return max(p.value for p in points)
 
 
 def _sum(points):
-    return sum(item.value for item in points)
+    return sum(p.value for p in points)
 
 
 def _avg(points):
-    return sum(item.value for item in points) / float(len(points))
+    return sum(p.value for p in points) / float(len(points))
 
 
 def _diff(points):
@@ -42,15 +41,15 @@ class TimeSeriesCalc(object):
         self.ped = ped
         return
 
-    def energy(self, calc=ts_AVG, start_time=None, end_time=None):
-        return self.period_calc(SMDXPoint.ENERGY, calc, start_time, end_time)
+    def energy(self, model_id, calc=ts_AVG, start_time=None, end_time=None):
+        return self.period_calc(model_id, SMDXPoint.ENERGY, calc, start_time, end_time)
 
-    def energy_exported(self, calc=ts_AVG, start_time=None, end_time=None):
-        return self.period_calc(SMDXPoint.TOTAL_ENERGY_EXPORTED, calc,
+    def energy_exported(self, model_id, calc=ts_AVG, start_time=None, end_time=None):
+        return self.period_calc(model_id, SMDXPoint.TOTAL_ENERGY_EXPORTED, calc,
                                 start_time, end_time)
 
-    def period_calc(self, point_id, calc=ts_AVG, start_time=None, end_time=None):
-        """ Perform given calculation upon the Points found within the period.
+    def period_calc(self, model_id, point_id, calc=ts_AVG, start_time=None, end_time=None):
+        """ Perform given calculation upon all Points found within the period.
 
             Note: If both start_time and end_time are None, then points for the sunSpecData
             block's entire time range are returned.
@@ -66,12 +65,13 @@ class TimeSeriesCalc(object):
         if self.ped:
             ssd = self.ped.sunspec_data
             self.ped.parse_data()
-            points = ssd.get_points_in_period(start_time, end_time, point_id)
+            points = ssd.get_points_in_period(start_time, end_time,
+                                              model_id, point_id)
             if len(points) > 0:
                 print ' period points count:', len(points)
                 print ' sum of points:'
-                print '  ts_SUM:', str(ts_SUM(points))
                 print '     sum:', str(sum(p.value for p in points))
+                print '  ts_SUM:', str(ts_SUM(points))
                 print '  ts_MIN:', ts_MIN(points)
                 print '  ts_MAX:', ts_MAX(points)
                 print ' ts_DIFF:', str(ts_DIFF(points))
