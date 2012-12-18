@@ -274,14 +274,19 @@ class Point(object):
             # SunSpecData <p ... t="YYYY-MM-DDThh:mm:ssZ"
             self.time = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
 
-    def set_type(self, type):  # TODO change to python attribute oriented setter!
-        self.type = type
-        logging.info("Point.set_type() id:", self.id, " type:", self.type)
-        if (self.type == SP.UINT16) or (self.type == SP.INT16) or (self.type == SP.INT32):
+    def get_type(self):
+        return self._type
+
+    def set_type(self, type_value):
+        self._type = type_value
+        logging.info("Point.set_type() id:", self.id, " type:", self._type)
+        if (self._type == SP.UINT16) or (self._type == SP.INT16) or (self._type == SP.INT32):
             self.value = int(self.value)
-        elif self.type == SP.FLOAT32 or self.type == SP.ACC32:
+        elif self._type == SP.FLOAT32 or self._type == SP.ACC32:
             self.value = float(self.value)
         return
+
+    type = property(get_type, set_type)
 
 #     def __radd__(self, other):
 #         result = None
