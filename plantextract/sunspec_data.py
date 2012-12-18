@@ -43,14 +43,15 @@ class SunSpecData(object):
       dr.parse()
     self.parsed = True
 
-  def get_points(self):
+  def get_points(self, model_id):
     all_points = list()
     for dr in self.device_records:
-      for model in dr.models:
-        all_points = all_points + model.points
+      for m in dr.models:
+        if m.id == model_id:
+            all_points = all_points + m.points
     return all_points
 
-  def _get_matching_points(self, point_id):
+  def _get_matching_points(self, model_id, point_id):
     """Get a list of points which match the given point_id
     """
     points = list()
@@ -60,12 +61,13 @@ class SunSpecData(object):
       models = dr.models
       if models is not None:
         for m in models:
-          plist = m.get_matching_points(point_id)
-          if (plist is not None) and plist:
-            points = points + plist
+          if m.id == model_id:
+            plist = m.get_matching_points(point_id)
+            if (plist is not None) and plist:
+                points = points + plist
     return points
 
-  def get_points_in_period(self, start_time, end_time, point_id='All'):
+  def get_points_in_period(self, start_time, end_time, model_id, point_id='All'):
     """Get a Point.time sorted list of points that are between the start_time
        and end_time and that match the point_id.
 
@@ -84,9 +86,9 @@ class SunSpecData(object):
                  " > " + str(end_time) + " point_id: " + point_id)
 
     if point_id is 'All':
-      points = self.get_points()
+      points = self.get_points(model_id)
     else:
-      points = self._get_matching_points(point_id)
+      points = self._get_matching_points(model_id, point_id)
 
     period_points = list()
     for p in points:
@@ -100,7 +102,7 @@ class SunSpecData(object):
 
   def tostring(self):
     return ''.join(['SunSpecData v:', str(self.version),
-                    ' point count: ', str(len(self.get_points()))])
+                    ' device record count: ', str(len(self.device_records))])
 
 
 class DeviceRecord(object):
@@ -207,7 +209,7 @@ class Model(object):
                         " exists but shouldn't for SMDX.model_id: ", str(self.id)]))
 
     mand_met = False
-    if len(self._has_mandatory_points()) == 0:
+    if self._has_mandatory_points() is None:
       mand_met = True
     logging.debug("Model.parse() has all mandatory points? " + str(mand_met))
 
@@ -244,7 +246,8 @@ class Model(object):
             logging.warning("Model.id:" + str(self.id) +
                             " missing mandatory SMDXPoint.id:" + sp.id)
             missing_mand[sp.id] = sp
-        return missing_mand
+
+    return missing_mand
 
     def set_metadata(self, element):
         return
