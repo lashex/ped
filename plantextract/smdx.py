@@ -18,10 +18,10 @@ smdx_schema_parser = None
 
 class SMDX(object):
     # SMDX descriptive model id constants
-    INVERTER_SINGLE_PHASE = '101'
-    INVERTER_SPLIT_PHASE  = '102'
-    INVERTER_THREE_PHASE  = '103'
-    METER_SINGLE_PHASE    = '201'
+    INVERTER_SINGLE_PHASE = 101
+    INVERTER_SPLIT_PHASE  = 102
+    INVERTER_THREE_PHASE  = 103
+    METER_SINGLE_PHASE    = 201
 
     _cache={} # holds the cached SMDX object if instantiated multiple times
 
