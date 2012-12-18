@@ -46,6 +46,7 @@ venv
 # BDist Artifacts #
 ###################
 build
+dist
 
 # IDE and Editor artifacts #
 *.bbprojectd
