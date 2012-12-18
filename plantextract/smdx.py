@@ -97,6 +97,7 @@ class SMDXPoint(object):
     INT16 = 'int16'
     UINT16 = 'unint16'
     INT32 = 'int32'
+    ACC16 = 'acc16'
     ACC32 = 'acc32'
 
     def __init__(self, element):
