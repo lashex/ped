@@ -134,7 +134,7 @@ class DeviceRecord(object):
         m_id = m.get('id')
         if m_id is not None:
           logging.debug("DeviceRecord.__init__() adding model_id: " + m_id)
-          self.models.append(Model(m, m_id, self.time))
+          self.models.append(Model(self, m, m_id, self.time))
 
   def _determine_id(self):
     self.device_id_type = None
@@ -172,7 +172,8 @@ class DeviceRecord(object):
 class Model(object):
   element_name = 'm'
 
-  def __init__(self, element, id, dr_time):
+  def __init__(self, device_record, element, id, dr_time):
+    self.device_record = device_record
     self.dr_time = dr_time
     self.points = list()
     if element is None:
