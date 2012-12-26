@@ -8,7 +8,6 @@ from lxml import etree
 
 from sunspec_data import SunSpecData
 from smdx import SMDX
-from ts_calc import TimeSeriesCalc, ts_SUM
 
 
 xsd_filename = "sunspec_plant_extract.xsd"
@@ -280,8 +279,3 @@ if __name__ == '__main__':
         ped.parse_data()
         print ped.sunspec_data.tostring()
         print ">> PlantExtract completed parsing of sunSpecData"
-        tsc = TimeSeriesCalc(ped)
-        print ">> energy calculation from all INVERTER_SINGLE_PHASE Models"
-        print tsc.energy(SMDX.INVERTER_SINGLE_PHASE)
-        print ">> energy exported calculation from all INVERTER_SINGLE_PHASE Models"
-        print tsc.energy_exported(SMDX.INVERTER_SINGLE_PHASE)
