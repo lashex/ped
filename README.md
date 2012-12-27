@@ -6,4 +6,4 @@ standard blocks contained therein. Typical usage often looks like this::
     #!/usr/bin/env python
 
     from plantextract.ped import PlantExtract
-    from plantextract.ts_calc import TimeSeriesCalc
+    from plantextract.smdx import SMDX
