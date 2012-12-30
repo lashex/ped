@@ -1,17 +1,17 @@
 Plant Extract Document processor
 ================================
-A package for interacting with `SunSpec <http://sunspec.org>`_ Plant Extract
+A package for interacting with [SunSpec][] Plant Extract
 Documents and the standard blocks contained therein.
 
 Installation
 ------------
-Using pip::
+Using pip
 
     pip install plantextract
 
 Usage
 -------
-Typical usage looks like this::
+Typical usage looks like this
 
     #!/usr/bin/env python
 
@@ -23,4 +23,7 @@ Typical usage looks like this::
     print ped.plant         # the Plant Info block
     print ped.sunspec_data  # the sunSpecData block
 
-Requires `lxml 3.0 <http://lxml.de>`_ or later.
+Requires [lxml][] 3.0 or later.
+
+[lxml]:    http://lxml.de
+[sunspec]: http://sunspec.org
