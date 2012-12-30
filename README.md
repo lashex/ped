@@ -6,9 +6,10 @@ standard blocks contained therein.
 Installation
 ------------
 Using pip::
+
     pip install plantextract
 
-Usage::
+Usage
 -------
 Typical usage often looks like this::
 
