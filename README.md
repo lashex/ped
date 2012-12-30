@@ -23,4 +23,4 @@ Typical usage looks like this::
     print ped.plant         # the Plant Info block
     print ped.sunspec_data  # the sunSpecData block
 
-Requires [lxml](http://lxml.de) 3.0 or later.
+Requires [lxml](http://lxml.de) 3.0.1.

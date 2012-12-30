@@ -1,3 +1,5 @@
+0.2.7 -- More explicit dependency upon lxml 3.0.1 instead of anything >= 3.0
+
 0.2.4 -- Added Apache 2.0 License
 
 0.2.3 -- first prep steps for public availability
