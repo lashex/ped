@@ -21,4 +21,6 @@ Typical usage often looks like this::
     ped = PlantExtract('ped-file-to-process')
     ped.parse_data()    # will parse any existing sunSpecData block
 
-Requires lxml 3.0 or later
+Requires lxml-3.0_ or later
+
+.. _lxml-3.0: http://lxml.de
