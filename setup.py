@@ -16,9 +16,9 @@ import os
 from distutils.core import setup
 from setuptools import find_packages
 
-version = '0.2.4'
+version = '0.2.6'
 README = os.path.join(os.path.dirname(__file__), 'README.md')
-long_description = open(README).read() + 'nn'
+long_description = open(README).read()
 
 setup(name='plantextract',
       version=version,
