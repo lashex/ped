@@ -99,7 +99,7 @@ class PlantExtract(object):
             self.sunspec_data.parse()
 
     def tostring(self):
-        """Produces a string representation of the Plant Extract standard blocks """
+        """Produces a string representation of the Plant Extract envelope"""
         return ''.join(['PlantExtract v:', str(self.version), ' t:', str(self.time),
                         ' seqId:', str(self.seqId), ' lastSeqId:', str(self.lastSeqId)])
 
@@ -155,7 +155,8 @@ class Plant(object):
     def tostring(self):
         """Produces a string representation of some parsed Plant values """
         return ''.join(["Plant id:", self.id.hex, ", v:", str(self.version),
-                        ", name:", self.name])
+                        ", name:", self.name, ", locale:", self.locale,
+                        ", description:", self.description])
 
 
 class PropertyContainer(object):
