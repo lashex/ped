@@ -114,7 +114,7 @@ class SunSpecData(object):
     period_points = sorted(period_points, key=attrgetter('time'))
     return period_points
 
-  def tostring(self):
+  def __str__(self):
     return ''.join(['SunSpecData v:', str(self.version),
                     ' device record count: ', str(len(self.device_records))])
 

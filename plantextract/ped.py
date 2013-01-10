@@ -45,8 +45,7 @@ class PlantExtract(object):
         self.tree = etree.parse(self.ped_file)
         schema_doc = etree.parse(xsd_file)
         self.schema = etree.XMLSchema(schema_doc)
-        valid = self.valid(True)  # TODO: interpret command line 'validate' arg
-        logging.info("PlantExtract.__init__() valid:" + str(valid))
+        logging.info("PlantExtract.__init__() valid_xml:" + str(self.valid_xml()))
         # now parse the Plant Extract
         self.envelope = self.tree.getroot()
         if self.envelope is None:
@@ -65,21 +64,21 @@ class PlantExtract(object):
             # Plant Extract t="YYYY-MM-DDThh:mm:ssZ"
             self.time = dt.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
 
-    #   check for sunSpecPlantExtract version, assume '1' if absent
+        # check for sunSpecPlantExtract version, assume '1' if absent
         v = env.get('v')
         if v is not None:
             self.version = int(v)
         else:
             self.version = 1
 
-    #   check for sunSpecPlantExtract seqId, assume '1' if absent
+        # check for sunSpecPlantExtract seqId, assume '1' if absent
         sid = env.get('seqId')
         if sid is not None:
             self.seqId = int(sid)
         else:
             self.seqId = 1
 
-    #   check for sunSpecPlantExtract lastSeqId, assume '1' if absent
+        # check for sunSpecPlantExtract lastSeqId, assume '1' if absent
         lid = env.get('lastSeqId')
         if lid is not None:
             self.lastSeqId = int(lid)
@@ -91,14 +90,16 @@ class PlantExtract(object):
 
         self.plant = Plant(self.envelope.find(Plant.element_name))
         self.sunspec_data = SunSpecData(self.envelope.find(SunSpecData.element_name))
-    #   TODO: sunSpecMetadata TODO: strings TODO: extract extensions
+        # TODO: sunSpecMetadata
+        # TODO: strings
+        # TODO: extract extensions
         return
 
     def parse_data(self):
         if self.sunspec_data.exists and not self.sunspec_data.parsed:
             self.sunspec_data.parse()
 
-    def tostring(self):
+    def __str__(self):
         """Produces a string representation of the Plant Extract envelope"""
         return ''.join(['PlantExtract v:', str(self.version), ' t:', str(self.time),
                         ' seqId:', str(self.seqId), ' lastSeqId:', str(self.lastSeqId)])
@@ -108,7 +109,7 @@ class PlantExtract(object):
         """
         return self.seqId == self.lastSeqId
 
-    def valid(self, assert_=False):
+    def valid_xml(self, assert_=False):
         """Determines if this Plant Extract is valid XML in compliance with the XSD"""
         if assert_:
             self.schema.assert_(self.tree)
@@ -117,6 +118,18 @@ class PlantExtract(object):
             self.valid = self.schema.validate(self.tree)
 
         return self.valid
+
+    @classmethod
+    def is_ped(file):
+        is_ped_file = False
+        try:
+            ped = PlantExtract(file)
+            is_ped_file = True
+        except PlantExtractException, pexe:
+            is_ped_file = False
+            logging.exception("PlantExtract.is_ped() PlantExtractException: %s", pexe)
+        finally:
+            return is_ped_file
 
 
 class Plant(object):
@@ -224,11 +237,7 @@ class Participant(PropertyContainer):
 
 
 class PlantExtractException(Exception):
-
-    def __init__(self, argument):
-        super(PlantExtractException, self).__init__(argument)
-        self.argument = argument
-
+    pass
 
 #####################
 #   Utility functions
@@ -241,7 +250,6 @@ def get_node_value(node, node_name):
         node_value = node.find(node_name).text
 
     return node_value
-
 
 ########################
 #   command line parsing
@@ -287,10 +295,10 @@ if __name__ == '__main__':
     else:
         # xsd_full_file = os.path.join(os.getcwd(), xsd_dir, xsd_filename)
         ped = PlantExtract(args.ped[0])
-        print ped.tostring()
+        print ped
         print ">> PlantExtract Plant"
-        print ped.plant.tostring()
+        print ped.plant
         print ">> PlantExtract parsing sunSpecData"
         ped.parse_data()
-        print ped.sunspec_data.tostring()
+        print ped.sunspec_data
         print ">> PlantExtract completed parsing of sunSpecData"

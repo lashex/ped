@@ -19,8 +19,13 @@ Typical usage looks like this::
     from plantextract.smdx import SMDX
 
     ped = PlantExtract('ped-file-to-process') # automatic parsing of envelope
-    ped.parse_data()        # will parse an included sunSpecData block
-    print ped.plant         # the Plant Info block
+    ped.parse_data()    # will parse an included sunSpecData block
+    print ped.plant     # the Plant Info block
+    print ped.plant.name    # the Plant's name attribute
+    # ...etc...
+
     print ped.sunspec_data  # the sunSpecData block
+    print ped.sunspec_data.device_records[0].models[0].smdx # SMDX info of model
+    print ped.sunspec_data.device_records[0].models[0].points[0] # block structure
 
 Requires [lxml](http://lxml.de) 3.0.1.
