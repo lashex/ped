@@ -12,8 +12,6 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-from collections import defaultdict
-import hashlib
 import os
 import logging
 
@@ -41,6 +39,8 @@ class SMDX(object):
 
     def __init__(self, element, model_id):
         logging.debug("SMDX.__init__()")
+        self.points = {}
+        self.smdx_tree = None
         return
 
     def __new__(cls, element, model_id):
@@ -147,8 +147,8 @@ class SunSpecSMDXException(Exception):
 def get_smdx_parser():
   global smdx_schema_parser
   if (smdx_schema_parser is None):
+    schema_filename = os.path.join(os.getcwd(), xsd_dir, smdx_xsd)
     try:
-      schema_filename = os.path.join(os.getcwd(), xsd_dir, smdx_xsd)
       schema_etree = etree.parse(schema_filename)
       schema = etree.XMLSchema(schema_etree)
       logging.info("get_smdx_parser() getting a global lxml.objectify SMDX parser")

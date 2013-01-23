@@ -21,7 +21,6 @@ import datetime as dt
 from lxml import etree
 
 from sunspec_data import SunSpecData
-from smdx import SMDX
 
 
 xsd_filename = "sunspec_plant_extract.xsd"
@@ -120,7 +119,9 @@ class PlantExtract(object):
         return self.valid
 
     @classmethod
-    def is_ped(file):
+    def is_ped(cls, file):
+        """Convenience method to determine if the given file is a Plant Extract
+        """
         is_ped_file = False
         try:
             ped = PlantExtract(file)
@@ -300,5 +301,7 @@ if __name__ == '__main__':
         print ped.plant
         print ">> PlantExtract parsing sunSpecData"
         ped.parse_data()
-        print ped.sunspec_data
         print ">> PlantExtract completed parsing of sunSpecData"
+        print ped.sunspec_data  # the sunSpecData block
+        print ped.sunspec_data.device_records[0].models[0].smdx # SMDX info of model
+        print ped.sunspec_data.device_records[0].models[0].points[0] # block structure
