@@ -29,4 +29,4 @@ Typical usage looks like this::
     print ped.sunspec_data.device_records[0].models[0].smdx # SMDX info of model
     print ped.sunspec_data.device_records[0].models[0].points[0] # block structure
 
-Requires [lxml](http://lxml.de) 3.0.1.
+Requires [lxml](http://lxml.de) 3.0.2.
