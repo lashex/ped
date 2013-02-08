@@ -1,7 +1,7 @@
 Plant Extract Document processor
 ================================
-A package for interacting with [SunSpec](http://sunspec.org) Plant Extract
-Documents and the standard blocks contained therein.
+A package for interacting with and creating [SunSpec](http://sunspec.org)
+Plant Extract Documents and the standard blocks contained therein.
 
 Installation
 ------------
@@ -21,7 +21,7 @@ Typical usage looks like this::
     ped = PlantExtract()
     ped.parse('ped-cls-to-process') # automatic parsing of envelope
     ped.parse_data()    # will parse an included sunSpecData block
-    print ped.plant     # the Plant Info block
+    print ped.plant     # the Plant block
     print ped.plant.name    # the Plant's name attribute
     # ...etc...
 

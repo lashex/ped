@@ -13,6 +13,7 @@
 #    limitations under the License.
 
 from uuid import UUID
+from uuid import uuid4
 from collections import defaultdict
 import os
 import logging
@@ -26,6 +27,7 @@ from sunspec_data import SunSpecData
 
 xsd_filename = "sunspec_plant_extract.xsd"
 xsd_dir = "xsd"
+time_format = '%Y-%m-%dT%H:%M:%SZ'
 #   logger = logging.getLogger('ped') f =
 #   logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s') sh =
 #   logging.StreamHandler() sh.setFormatter(f) logger.addHandler(sh)
@@ -38,29 +40,36 @@ class PlantExtract(object):
 
     def __init__(self):
         logging.debug("PlantExtract.__init__()")
+        self.xml = None
 
     @classmethod
-    def create(self, plant_block, sunSpecData=None):
+    def create(self, plant, sunSpecData=None):
         """Create a plant extract document given parameters and data for the
            standard blocks.
         """
         logging.debug("PlantExtract.create()")
 
-        seqId = lastSeqId = 1
-
-        p = E.plant
         ssd = E.sunSpecData
+        nowt = dt.datetime.utcnow()
 
-        self.xml = (
-            E.sunSpecPlantExtract(t=dt.datetime.utcnow(), seqId, lastSeqId,
-                p(id=plant_block.id.hex, v=1, locale=plant_block.locale,
-                    E.name(plant_block.name)
+        ped = PlantExtract()
+        print plant
+        ped.xml = (
+            E.sunSpecPlantExtract(
+                E.plant(
+                    E.name(plant.name),
+                    id=plant.id.hex, v="1", locale=plant.locale,
                 ),
-                ssd(v=1,
+                E.sunSpecData(),
+                t=nowt.strftime(time_format), seqId="1", lastSeqId="1",
 
-                )
+                #)
+                # ssd(v=1
+                #
+                # )
             )
         )
+        return ped
 
 
     def parse(self, ped_file):
@@ -86,7 +95,7 @@ class PlantExtract(object):
             raise PlantExtractException("sunSpecPlantExtract root node 't' attribute is required.")
         else:
             # Plant Extract t="YYYY-MM-DDThh:mm:ssZ"
-            self.time = dt.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
+            self.time = dt.datetime.strptime(time, time_format)
 
         # check for sunSpecPlantExtract version, assume '1' if absent
         v = env.get('v')
@@ -168,8 +177,11 @@ class Plant(object):
 
     @classmethod
     def create(self, plant_id, locale="en-US"):
-        self.id = plant_id
-        self.locale = locale
+        plant = Plant()
+        plant.id = plant_id
+        plant.locale = locale
+        plant.name = ""
+        return plant
 
     def parse(self, element):
         self.element = pe = element
@@ -291,21 +303,27 @@ def get_node_value(node, node_name):
 #   command line parsing
 if __name__ == '__main__':
     import argparse
-    cmd_parser = argparse.ArgumentParser(description='Process one or more Plant Extract Documents')
-    cmd_parser.add_argument('ped', type=file, nargs='+',
-                            help='one or more plant extract documents to process - absolute path')
-    cmd_parser.add_argument('--xsd', type=file, nargs=1,
-                            help='override the default XML schema document for validation')
-    cmd_parser.add_argument('--novalid', dest='validation', action='store_false',
-                            help='do not validate the given plant extract documents')
-    cmd_parser.add_argument('--log', dest='loglevel', default='WARNING',
-                            help='set the log level (default:WARNING)')
-    cmd_parser.add_argument('--test', dest='activate_tests', action='store_true',
-                            help='activate doctests for the Plant Extract class')
+    parser = argparse.ArgumentParser(description='Process or create Plant Extract Documents')
+    parser.add_argument('--log', dest='loglevel', default='WARNING',
+                        help='set the log level (default:WARNING)')
+    parser.add_argument('--test', dest='activate_tests', action='store_true',
+                        help='activate doctests for the Plant Extract class')
+    sp = parser.add_subparsers()
 
-    args = cmd_parser.parse_args()
+    sp_create = sp.add_parser('create',
+                              help="Create a plant extract document")
+
+    sp_parse  = sp.add_parser('parse', help="Parse a plant extract document")
+    sp_parse.add_argument('--ped', type=file, nargs='+',
+                            help='one or more plant extract documents to process - absolute path')
+    sp_parse.add_argument('--xsd', type=file, nargs=1,
+                            help='override the default XML schema document for validation')
+    sp_parse.add_argument('--novalid', dest='validation', action='store_false',
+                            help='do not validate the given plant extract documents')
+
+    args = parser.parse_args()
     #   Now for some post parsing output
-    print args.ped
+    # print args.ped
 
     if args.loglevel is not None:
         loglevel = args.loglevel.upper()
@@ -330,14 +348,20 @@ if __name__ == '__main__':
         """
     else:
         # xsd_full_file = os.path.join(os.getcwd(), xsd_dir, xsd_filename)
-        ped = PlantExtract()
-        ped.parse(args.ped[0])
-        print ped
-        print ">> PlantExtract Plant"
-        print ped.plant
-        print ">> PlantExtract parsing sunSpecData"
-        ped.parse_data()
-        print ">> PlantExtract completed parsing of sunSpecData"
-        print ped.sunspec_data  # the sunSpecData block
-        print ped.sunspec_data.device_records[0].models[0].smdx # SMDX info of model
-        print ped.sunspec_data.device_records[0].models[0].points[0] # block structure
+        ped = PlantExtract.create(
+            Plant().create(
+                uuid4()
+            )
+        )
+        print etree.tostring(ped.xml, pretty_print=True)
+        # ped = PlantExtract()
+        # ped.parse(args.ped[0])
+        # print ped
+        # print ">> PlantExtract Plant"
+        # print ped.plant
+        # print ">> PlantExtract parsing sunSpecData"
+        # ped.parse_data()
+        # print ">> PlantExtract completed parsing of sunSpecData"
+        # print ped.sunspec_data  # the sunSpecData block
+        # print ped.sunspec_data.device_records[0].models[0].smdx # SMDX info of model
+        # print ped.sunspec_data.device_records[0].models[0].points[0] # block structure
