@@ -19,6 +19,7 @@ import logging
 import datetime as dt
 
 from lxml import etree
+from lxml.builder import E
 
 from sunspec_data import SunSpecData
 
@@ -31,12 +32,40 @@ xsd_dir = "xsd"
 
 
 class PlantExtract(object):
-    """ Process a Plant Extract Document and allow straightforward retrieval of information
-        from each of the standard blocks.
+    """ A Plant Extract Document processor supporting straightforward
+        interaction with information from each of the standard blocks.
     """
 
-    def __init__(self, ped_file):
+    def __init__(self):
         logging.debug("PlantExtract.__init__()")
+
+    @classmethod
+    def create(self, plant_block, sunSpecData=None):
+        """Create a plant extract document given parameters and data for the
+           standard blocks.
+        """
+        logging.debug("PlantExtract.create()")
+
+        seqId = lastSeqId = 1
+
+        p = E.plant
+        ssd = E.sunSpecData
+
+        self.xml = (
+            E.sunSpecPlantExtract(t=dt.datetime.utcnow(), seqId, lastSeqId,
+                p(id=plant_block.id.hex, v=1, locale=plant_block.locale,
+                    E.name(plant_block.name)
+                ),
+                ssd(v=1,
+
+                )
+            )
+        )
+
+
+    def parse(self, ped_file):
+        """Parse the plant extract document (minus sunSpecData)"""
+        logging.debug("PlantExtract.parse()")
         # open file and validate
         this_dir, this_filename = os.path.split(__file__)
         xsd_file = os.path.join(this_dir, xsd_dir, xsd_filename)
@@ -44,17 +73,13 @@ class PlantExtract(object):
         self.tree = etree.parse(self.ped_file)
         schema_doc = etree.parse(xsd_file)
         self.schema = etree.XMLSchema(schema_doc)
-        logging.info("PlantExtract.__init__() valid_xml:" + str(self.valid_xml()))
+        logging.info("PlantExtract.parse() valid_xml:" + str(self.valid_xml()))
         # now parse the Plant Extract
         self.envelope = self.tree.getroot()
         if self.envelope is None:
             raise PlantExtractException("sunSpecPlantExtract root not found.")
 
-        self._parse()
-
-    def _parse(self):
-        """Parse the plant extract document (minus sunSpecData)"""
-        logging.debug("PlantExtract._parse()")
+        logging.debug("PlantExtract.parse()")
         env = self.envelope
         time = env.get('t')
         if time is None:
@@ -87,16 +112,17 @@ class PlantExtract(object):
         if self.seqId > self.lastSeqId:
             raise PlantExtractException("seqId can't be larger than the lastSeqId")
 
-        self.plant = Plant(self.envelope.find(Plant.element_name))
-        self.sunspec_data = SunSpecData(self.envelope.find(SunSpecData.element_name))
+        self.plant = Plant().parse(self.envelope.find(Plant.element_name))
+        self.sunspec_data = SunSpecData().parse_block(self.envelope.find(SunSpecData.element_name))
         # TODO: sunSpecMetadata
         # TODO: strings
         # TODO: extract extensions
         return
 
     def parse_data(self):
+        """Parse the sunSpecData block"""
         if self.sunspec_data.exists and not self.sunspec_data.parsed:
-            self.sunspec_data.parse()
+            self.sunspec_data.parse_data()
 
     def __str__(self):
         """Produces a string representation of the Plant Extract envelope"""
@@ -119,12 +145,13 @@ class PlantExtract(object):
         return self.valid
 
     @classmethod
-    def is_ped(cls, file):
+    def is_ped(cls, ped_file):
         """Convenience method to determine if the given file is a Plant Extract
         """
         is_ped_file = False
         try:
-            ped = PlantExtract(file)
+            ped = PlantExtract()
+            ped.parse(ped_file)
             is_ped_file = True
         except PlantExtractException, pexe:
             is_ped_file = False
@@ -136,7 +163,15 @@ class PlantExtract(object):
 class Plant(object):
     element_name = 'plant'
 
-    def __init__(self, element):
+    def __init__(self):
+        logging.debug("Plant.__init__()")
+
+    @classmethod
+    def create(self, plant_id, locale="en-US"):
+        self.id = plant_id
+        self.locale = locale
+
+    def parse(self, element):
         self.element = pe = element
         if pe is None:
             raise PlantExtractException("plant element not found")
@@ -179,19 +214,19 @@ class PropertyContainer(object):
         self.properties = defaultdict(list)
         self.element = my_element
         if self.element is not None:
-            for property in self.element.iter(Property.element_name):
-                prop_id = property.get('id')
-                prop_type = property.get('type')
+            for prop in self.element.iter(Property.element_name):
+                prop_id = prop.get('id')
+                prop_type = prop.get('type')
                 self.properties[prop_id].append(Property(prop_id, prop_type,
-                                                         property.text))
+                                                         prop.text))
 
 
 class Property(object):
     element_name = 'property'
 
-    def __init__(self, id, type, text):
-        self.id = id
-        self.type = type
+    def __init__(self, prop_id, prop_type, text):
+        self.id = prop_id
+        self.type = prop_type
         self.text = text
 
 
@@ -295,7 +330,8 @@ if __name__ == '__main__':
         """
     else:
         # xsd_full_file = os.path.join(os.getcwd(), xsd_dir, xsd_filename)
-        ped = PlantExtract(args.ped[0])
+        ped = PlantExtract()
+        ped.parse(args.ped[0])
         print ped
         print ">> PlantExtract Plant"
         print ped.plant

@@ -26,97 +26,102 @@ from smdx import SMDXPoint as SP
 
 
 class SunSpecData(object):
-  element_name = 'sunSpecData'
+    element_name = 'sunSpecData'
 
-  def __init__(self, element):
-    """Initialize a SunSpecData object given the XML Element
-    """
-    self.element = element
-    if self.element is None:
-      self.exists = False
-      return
-    else:
-        self.exists = True
+    def __init__(self):
+        logging.debug("SunSpecData.__init__()")
 
-    # check for sunSpecData version, assume '1' if absent
-    v = self.element.get('v')
-    if v is not None:
-        self.version = int(v)
-    else:
-        self.version = 1
+    def parse_block(self, element):
+        """Parse the SunSpecData block device records, minus Points
+        """
+        self.element = element
+        if self.element is None:
+          self.exists = False
+          return
+        else:
+            self.exists = True
 
-    self.device_records = list()
-    for d_record in self.element.iter(DeviceRecord.element_name):
-      self.device_records.append(DeviceRecord(d_record))
+        # check for sunSpecData version, assume '1' if absent
+        v = self.element.get('v')
+        if v is not None:
+            self.version = int(v)
+        else:
+            self.version = 1
 
-    self.parsed = False
+        self.device_records = list()
+        for d_record in self.element.iter(DeviceRecord.element_name):
+          self.device_records.append(DeviceRecord(d_record))
 
-  def parse(self):
-    logging.debug("SunSpecData.parse()")
-    for dr in self.device_records:
-      dr.parse()
-    self.parsed = True
+        self.parsed = False
 
-  def get_points(self, model_id):
-    all_points = list()
-    for dr in self.device_records:
-      for m in dr.models:
-        if m.id == model_id:
-            all_points = all_points + m.points
-    return all_points
+    def parse_data(self):
+        """Parse the SunSpecData block's Points
+        """
+        logging.debug("SunSpecData.parse()")
+        for dr in self.device_records:
+            dr.parse()
+        self.parsed = True
 
-  def _get_matching_points(self, model_id, point_id):
-    """Get a list of points which match the given point_id
-    """
-    points = list()
-    logging.debug(''.join(["SunSpecData.get_matching_points() looking for point_id:",
-                  str(point_id)]))
-    for dr in self.device_records:
-      models = dr.models
-      if models is not None:
-        for m in models:
-          if m.id == model_id:
-            plist = m.get_matching_points(point_id)
-            if (plist is not None) and plist:
-                points = points + plist
-    return points
+    def get_points(self, model_id):
+        all_points = list()
+        for dr in self.device_records:
+            for m in dr.models:
+                if m.id == model_id:
+                    all_points = all_points + m.points
+        return all_points
 
-  def get_points_in_period(self, start_time, end_time, model_id, point_id='All'):
-    """Get a Point.time sorted list of points that are between the start_time
-       and end_time and that match the point_id.
+    def _get_matching_points(self, model_id, point_id):
+        """Get a list of points which match the given point_id
+        """
+        points = list()
+        logging.debug(''.join(["SunSpecData.get_matching_points() looking for point_id:",
+                      str(point_id)]))
+        for dr in self.device_records:
+            models = dr.models
+            if models is not None:
+                for m in models:
+                    if m.id == model_id:
+                        plist = m.get_matching_points(point_id)
+                        if (plist is not None) and plist:
+                            points = points + plist
+        return points
 
-       If both start_time and end_time are None, then points for the sunSpecData
-       block's entire time range is returned.
+    def get_points_in_period(self, start_time, end_time, model_id, point_id='All'):
+        """Get a Point.time sorted list of points that are between the start_time
+           and end_time and that match the point_id.
 
-       Arguments:
-       start_time -- the datetime describing the beginning of the period
-       end_time -- the datetime describing the end of the period
-       point_id -- the id of the Points to retrieve within the period
+           If both start_time and end_time are None, then points for the sunSpecData
+           block's entire time range is returned.
 
-       Return:
-       Points within the period as time sorted Points in a list
-    """
-    logging.info("SunSpecData.get_points_in_period: " + str(start_time) +
-                 " > " + str(end_time) + " point_id: " + point_id)
+           Arguments:
+           start_time -- the datetime describing the beginning of the period
+           end_time -- the datetime describing the end of the period
+           point_id -- the id of the Points to retrieve within the period
 
-    if point_id is 'All':
-      points = self.get_points(model_id)
-    else:
-      points = self._get_matching_points(model_id, point_id)
+           Return:
+           Points within the period as time sorted Points in a list
+        """
+        logging.info("SunSpecData.get_points_in_period: " + str(start_time) +
+                     " > " + str(end_time) + " point_id: " + point_id)
 
-    period_points = list()
-    for p in points:
-      if end_time is None and start_time is None:
-        period_points.append(p)
-      elif start_time < p.time < end_time:
-        period_points.append(p)
-    logging.info('Period points: ' + str(period_points))
-    period_points = sorted(period_points, key=attrgetter('time'))
-    return period_points
+        if point_id is 'All':
+            points = self.get_points(model_id)
+        else:
+            points = self._get_matching_points(model_id, point_id)
 
-  def __str__(self):
-    return ''.join(['SunSpecData v:', str(self.version),
-                    ' device record count: ', str(len(self.device_records))])
+        period_points = list()
+        for p in points:
+            if end_time is None and start_time is None:
+                period_points.append(p)
+            elif start_time < p.time < end_time:
+                period_points.append(p)
+        logging.info('Period points: ' + str(period_points))
+        period_points = sorted(period_points, key=attrgetter('time'))
+        return period_points
+
+    def __str__(self):
+        return ''.join(['SunSpecData v:', str(self.version),
+                        ' device record count: ', str(len(self.device_records))])
 
 
 class DeviceRecord(object):

@@ -16,7 +16,7 @@ import os
 from distutils.core import setup
 from setuptools import find_packages
 
-version = '0.2.8'
+version = '0.3.0'
 README = os.path.join(os.path.dirname(__file__), 'README.md')
 long_description = open(README).read()
 
@@ -30,7 +30,7 @@ setup(name='plantextract',
       # packages=find_packages(),
       include_package_data=True,
       license='Apache License, Version 2.0',
-      install_requires=['lxml == 3.0.1'],
+      install_requires=['lxml == 3.0.2'],
       keywords = "sunspec plant extract",
       classifiers=['Development Status :: 2 - Pre-Alpha',
                    'Intended Audience :: Developers',

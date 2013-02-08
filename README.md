@@ -18,7 +18,8 @@ Typical usage looks like this::
     from plantextract.ped import PlantExtract
     from plantextract.smdx import SMDX
 
-    ped = PlantExtract('ped-cls-to-process') # automatic parsing of envelope
+    ped = PlantExtract()
+    ped.parse('ped-cls-to-process') # automatic parsing of envelope
     ped.parse_data()    # will parse an included sunSpecData block
     print ped.plant     # the Plant Info block
     print ped.plant.name    # the Plant's name attribute
