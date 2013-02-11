@@ -193,7 +193,7 @@ class DeviceRecord(object):
 class Model(object):
     element_name = 'm'
 
-    def __init__(self, device_record, element, model_id, dr_time):
+    def parse(self, device_record, element, model_id, dr_time):
         self.device_record = device_record
         self.dr_time = dr_time
         self.points = list()
@@ -210,9 +210,8 @@ class Model(object):
         self.smdx = SMDX(element, model_id)
         logging.debug('Model constructed for model_id:' + str(model_id))
 
-    def parse(self):
-        """ Parse sunSpecData Model information
-
+    def parse_data(self):
+        """ Parse Points contained by the Model
         """
         logging.debug("Model.parse() model_id:" + str(self.model_id))
 
@@ -314,7 +313,7 @@ class Point(object):
         if self._type == SP.UINT16 or self._type == SP.INT16 \
             or self._type == SP.INT32 or self._type == SP.ACC16 \
             or self._type == SP.ACC32:
-            self.value = int(self.value) # Convert into 32 bit signed
+                self.value = int(self.value)  # Convert into 32 bit signed
         elif self._type == SP.FLOAT32:
             self.value = float(self.value)   # Convert into 64 bit float
         return

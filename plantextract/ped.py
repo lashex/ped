@@ -1,3 +1,4 @@
+# coding=utf-8
 # Copyright 2013 Gridward LLC
 #
 #    Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,8 +21,6 @@ import logging
 import datetime as dt
 
 from lxml import etree
-from lxml.builder import E
-
 from sunspec_data import SunSpecData
 
 
@@ -38,39 +37,37 @@ class PlantExtract(object):
         interaction with information from each of the standard blocks.
     """
 
+    element_name = "sunSpecPlantExtract"
+
     def __init__(self):
         logging.debug("PlantExtract.__init__()")
         self.xml = None
 
     @classmethod
-    def create(self, plant, sunSpecData=None):
+    def create(cls, plant, ssd=None):
         """Create a plant extract document given parameters and data for the
            standard blocks.
+        :param plant: a Plant object with at least a PlantID
+        :param ssd: a sunspec_data.DeviceRecord[]
         """
         logging.debug("PlantExtract.create()")
 
-        ssd = E.sunSpecData
         nowt = dt.datetime.utcnow()
 
         ped = PlantExtract()
+
         print plant
-        ped.xml = (
-            E.sunSpecPlantExtract(
-                E.plant(
-                    E.name(plant.name),
-                    id=plant.id.hex, v="1", locale=plant.locale,
-                ),
-                E.sunSpecData(),
-                t=nowt.strftime(time_format), seqId="1", lastSeqId="1",
-
-                #)
-                # ssd(v=1
-                #
-                # )
-            )
-        )
+        ped.xml = etree.Element(PlantExtract.element_name, seqId="1",
+                                lastSeqId="1", t=nowt.strftime(time_format))
+        p = etree.SubElement(ped.xml, Plant.element_name,
+                             id=str(plant.id.hex), v="1", locale=plant.locale)
+        etree.SubElement(p, "name").text = plant.name
+        etree.SubElement(p, "description").text = plant.description
+        etree.SubElement(p, "notes").text = plant.notes
+        if plant.activation_date is not None:
+            etree.SubElement(p, "activationDate").text = \
+                plant.activation_date.strftime('%Y-%m-%d')
         return ped
-
 
     def parse(self, ped_file):
         """Parse the plant extract document (minus sunSpecData)"""
@@ -176,11 +173,32 @@ class Plant(object):
         logging.debug("Plant.__init__()")
 
     @classmethod
-    def create(self, plant_id, locale="en-US"):
+    def create(cls, plant_id, locale="en-US", name="", notes="",
+               description="", activation_date=None, location=None):
+        """
+
+        :param plant_id:
+        :param locale:
+        :param name:
+        :param notes:
+        :param description:
+        :param activation_date: the date the power plant was actively
+            delivering power to the utility grid or energy off-taker. The
+            activation_date value must be compliant with the ISO 8601 date
+            format: "YYYY-MM-DD”
+        :param location:
+        :return:
+        """
         plant = Plant()
         plant.id = plant_id
         plant.locale = locale
-        plant.name = ""
+        plant.name = name
+        plant.notes = notes
+        plant.description = description
+        if activation_date is not None:
+            plant.activation_date = dt.datetime.strptime(activation_date,
+                                                         '%Y-%m-%d')
+        plant.location=location
         return plant
 
     def parse(self, element):
@@ -221,7 +239,6 @@ class Plant(object):
 
 
 class PropertyContainer(object):
-
     def __init__(self, my_element):
         self.properties = defaultdict(list)
         self.element = my_element
@@ -248,6 +265,49 @@ class Location(PropertyContainer):
     def __init__(self, location_element):
         super(Location, self).__init__(location_element)
 
+    @classmethod
+    def create(cls, latitude=0.0, longitude=0.0, line1="", line2="", city="",
+               state_province="", country="", postal="", elevation="",
+               timezone="", properties=defaultdict(list)):
+        """ Create a Location object using the given information.
+        :param latitude: the decimal degrees north or south of the equator of
+            the plant that is its parent. The latitude value is
+            a positive (representing northward) or negative (representing
+            southward) decimal number in the expected format: ±XX.XXXXXX
+            where the digits after the decimal are only necessary when
+            expressing increasingly accurate values.
+        :param longitude: the decimal degrees east or west from the Prime
+            Meridian of the plant that is its parent. The longitude value
+            is a positive (representing eastward) or negative (representing
+            westward) decimal number in the expected format: ±XXX.XXXXXX
+            where the digits after the decimal are necessary when expressing
+            increasingly accurate values.
+        :param line1:
+        :param line2:
+        :param city:
+        :param state_province:
+        :param country:
+        :param postal:
+        :param elevation:
+        :param timezone:
+        :param properties:
+        :return location: the created Location object
+        """
+        loc = Location(None)
+        loc.latitude = str(latitude)
+        loc.longitude = str(longitude)
+        loc.line1 = line1
+        loc.line2 = line2
+        loc.city = city
+        loc.stateProvince = state_province
+        loc.country = country
+        loc.postal = postal
+        loc.elevation = elevation
+        loc.timezone = timezone
+        loc.properties = properties
+        return loc
+
+    def parse(self):
         le = self.element
         self.latitude = get_node_value(le, 'latitude')
         self.longitude = get_node_value(le, 'longitude')
@@ -304,6 +364,8 @@ def get_node_value(node, node_name):
 #   command line parsing
 if __name__ == '__main__':
     import argparse
+
+
     parser = argparse.ArgumentParser(description='Process or create Plant Extract Documents')
     parser.add_argument('--log', dest='loglevel', default='WARNING',
                         help='set the log level (default:WARNING)')
@@ -314,13 +376,13 @@ if __name__ == '__main__':
     sp_create = sp.add_parser('create',
                               help="Create a plant extract document")
 
-    sp_parse  = sp.add_parser('parse', help="Parse a plant extract document")
+    sp_parse = sp.add_parser('parse', help="Parse a plant extract document")
     sp_parse.add_argument('--ped', type=file, nargs='+',
-        help='one or more plant extract documents to process - absolute path')
+                          help='one or more plant extract documents to process - absolute path')
     sp_parse.add_argument('--xsd', type=file, nargs=1,
-        help='override the default XML schema document for validation')
+                          help='override the default XML schema document for validation')
     sp_parse.add_argument('--novalid', dest='validation', action='store_false',
-                help='do not validate the given plant extract documents')
+                          help='do not validate the given plant extract documents')
 
     args = parser.parse_args()
     #   Now for some post parsing output
@@ -333,26 +395,30 @@ if __name__ == '__main__':
 
     if args.activate_tests is True:
         """ Run some tests on the PlantExtract class
-        >>>   ped = PlantExtract(args.ped[0])
-        print ped.last()
-        >>>   print 'TmpBOM'
-        ps = ped.sunspec_data.get_matching_points('TmpBOM') for p in ps: print
-          p.tostring()
-        >>>   print 'TotWh'
-        ps = ped.sunspec_data.get_matching_points('TotWh') for p in ps: print
-        p.tostring() print "Points in period"
-        #   start_time: 2012-10-28 22:00:59 end_time: 2012-10-28 22:03:00 > 5 or 6
-        #   inclusive
-        start_time = dt.datetime(2012, 10, 28, 22, 00, 00)
-        end_time = dt.datetime(2012, 10, 28, 22, 03, 00)
-        ped.sunspec_data.get_points_in_period(start_time, end_time, 'TotWh')
-        """
+    >>>   ped = PlantExtract(args.ped[0])
+    print ped.last()
+    >>>   print 'TmpBOM'
+    ps = ped.sunspec_data.get_matching_points('TmpBOM') for p in ps: print
+      p.tostring()
+    >>>   print 'TotWh'
+    ps = ped.sunspec_data.get_matching_points('TotWh') for p in ps: print
+    p.tostring() print "Points in period"
+    #   start_time: 2012-10-28 22:00:59 end_time: 2012-10-28 22:03:00 > 5 or 6
+    #   inclusive
+    start_time = dt.datetime(2012, 10, 28, 22, 00, 00)
+    end_time = dt.datetime(2012, 10, 28, 22, 03, 00)
+    ped.sunspec_data.get_points_in_period(start_time, end_time, 'TotWh')
+    """
     else:
         # xsd_full_file = os.path.join(os.getcwd(), xsd_dir, xsd_filename)
         ped = PlantExtract.create(
-            Plant().create(
-                uuid4()
-            )
+            Plant.create(
+                uuid4(),
+                activation_date="2012-12-02",
+                location=Location.create(latitude=1.1, longitude=2.2,
+                                         city="Redwood City",
+                                         state_province="CA")
+            ),
         )
         print etree.tostring(ped.xml, pretty_print=True)
         # ped = PlantExtract()
@@ -366,3 +432,4 @@ if __name__ == '__main__':
         # print ped.sunspec_data  # the sunSpecData block
         # print ped.sunspec_data.device_records[0].models[0].smdx # SMDX info of model
         # print ped.sunspec_data.device_records[0].models[0].points[0] # block structure
+
