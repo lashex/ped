@@ -27,15 +27,14 @@ smdx_xsd = "smdx.xsd"
 smdx_schema_parser = None
 
 
-
 class SMDX(object):
     # SMDX descriptive model id constants
     INVERTER_SINGLE_PHASE = 101
-    INVERTER_SPLIT_PHASE  = 102
-    INVERTER_THREE_PHASE  = 103
-    METER_SINGLE_PHASE    = 201
+    INVERTER_SPLIT_PHASE = 102
+    INVERTER_THREE_PHASE = 103
+    METER_SINGLE_PHASE = 201
 
-    _cache={} # holds the cached SMDX object if instantiated multiple times
+    _cache = {}  # holds the cached SMDX object if instantiated multiple times
 
     def __init__(self, element, model_id):
         logging.debug("SMDX.__init__()")
@@ -138,92 +137,89 @@ class SMDXPoint(object):
 
 
 class SunSpecSMDXException(Exception):
-
-  def __init__(self, argument):
-    super(SunSpecSMDXException, self).__init__(argument)
-    self.argument = argument
+    pass
 
 
 def get_smdx_parser():
-  global smdx_schema_parser
-  if (smdx_schema_parser is None):
-    schema_filename = os.path.join(os.getcwd(), xsd_dir, smdx_xsd)
-    try:
-      schema_etree = etree.parse(schema_filename)
-      schema = etree.XMLSchema(schema_etree)
-      logging.info("get_smdx_parser() getting a global lxml.objectify SMDX parser")
-      smdx_schema_parser = objectify.makeparser(schema = schema)
-    except IOError:
-      logging.error("IOError caught while opening " + schema_filename)
+    global smdx_schema_parser
+    if (smdx_schema_parser is None):
+        schema_filename = os.path.join(os.getcwd(), xsd_dir, smdx_xsd)
+        try:
+            schema_etree = etree.parse(schema_filename)
+            schema = etree.XMLSchema(schema_etree)
+            logging.info("get_smdx_parser() getting a global lxml.objectify SMDX parser")
+            smdx_schema_parser = objectify.makeparser(schema=schema)
+        except IOError:
+            logging.error("IOError caught while opening " + schema_filename)
 
-  return smdx_schema_parser
+    return smdx_schema_parser
 
 
 
-#     try:
-#       smdx_etree = etree.parse(os.path.join(os.getcwd(), smdx_dir, smdx_filename))
-#     except IOError:
-#       logging.warning("IOError caught while opening " + smdx_filename)
-#
-#     try:
-#       schema_etree = etree.parse(os.path.join(os.getcwd(), smdx_dir, smdx_xsd))
-#       schema = etree.XMLSchema(schema_etree)
-#     except IOError:
-#       logging.warning("IOError caught while opening " + smdx_xsd)
-#
-#     if (schema_etree is None) or (smdx_etree is None):
-#       return
-#     else:
-#       self.exists = True
-#       self.__valid(schema, smdx_etree)
-#
-#     smdx = SMDX(smdx_etree.getroot())
-#
-#
-#   def __valid(self, schema, smdx, assert_=False):
-#     """Determines if this SunSpecModel is valid XML in compliance with the SMDX XSD
-#     """
-#     if assert_:
-#       schema.assert_(smdx)
-#       self.valid = True
-#     else:
-#       self.valid = schema.validate(smdx)
-#       return self.valid
-#
-#   def parse(self):
-#
-#     return
-#
-# class SMDX(object):
-#   def __init__(self, root):
-#     self.root = root
-#     self.exists = False
-#     if self.root is None: return
-#     else:
-#       self.exists = True
-#       self.__parse()
-#       return
-#
-#   def __parse(self):
-#     """Parse the SMDX document
-#     """
-#     l = self.root.xpath('strings/model/label')
-#     self.label = l[0].text
-#
-#     self.points = defaultdict(list)
-#     point_elements = self.root.xpath('model//point')
-#     for p in point_elements:
-#       p_id = p.get('id')
-#       self.points[p_id].append(SMDXPoint(p))
-#
-#
-# class SMDXPoint(object):
-#   def __init__(self, element):
-#     e = element
-#     # check for sunSpecPlantExtract seqId, assume '1' if absent
-#     self.id     = e.get('id')
-#     self.offset = e.get('offset')
-#     self.type   = e.get('type')
-#     self.sf = e.get
-#
-#     return
+    #     try:
+    #       smdx_etree = etree.parse(os.path.join(os.getcwd(), smdx_dir, smdx_filename))
+    #     except IOError:
+    #       logging.warning("IOError caught while opening " + smdx_filename)
+    #
+    #     try:
+    #       schema_etree = etree.parse(os.path.join(os.getcwd(), smdx_dir, smdx_xsd))
+    #       schema = etree.XMLSchema(schema_etree)
+    #     except IOError:
+    #       logging.warning("IOError caught while opening " + smdx_xsd)
+    #
+    #     if (schema_etree is None) or (smdx_etree is None):
+    #       return
+    #     else:
+    #       self.exists = True
+    #       self.__valid(schema, smdx_etree)
+    #
+    #     smdx = SMDX(smdx_etree.getroot())
+    #
+    #
+    #   def __valid(self, schema, smdx, assert_=False):
+    #     """Determines if this SunSpecModel is valid XML in compliance with the SMDX XSD
+    #     """
+    #     if assert_:
+    #       schema.assert_(smdx)
+    #       self.valid = True
+    #     else:
+    #       self.valid = schema.validate(smdx)
+    #       return self.valid
+    #
+    #   def parse(self):
+    #
+    #     return
+    #
+    # class SMDX(object):
+    #   def __init__(self, root):
+    #     self.root = root
+    #     self.exists = False
+    #     if self.root is None: return
+    #     else:
+    #       self.exists = True
+    #       self.__parse()
+    #       return
+    #
+    #   def __parse(self):
+    #     """Parse the SMDX document
+    #     """
+    #     l = self.root.xpath('strings/model/label')
+    #     self.label = l[0].text
+    #
+    #     self.points = defaultdict(list)
+    #     point_elements = self.root.xpath('model//point')
+    #     for p in point_elements:
+    #       p_id = p.get('id')
+    #       self.points[p_id].append(SMDXPoint(p))
+    #
+    #
+    # class SMDXPoint(object):
+    #   def __init__(self, element):
+    #     e = element
+    #     # check for sunSpecPlantExtract seqId, assume '1' if absent
+    #     self.id     = e.get('id')
+    #     self.offset = e.get('offset')
+    #     self.type   = e.get('type')
+    #     self.sf = e.get
+    #
+    #     return

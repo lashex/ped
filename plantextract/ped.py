@@ -287,6 +287,7 @@ class Participant(PropertyContainer):
 class PlantExtractException(Exception):
     pass
 
+
 #####################
 #   Utility functions
 def get_node_value(node, node_name):
@@ -315,11 +316,11 @@ if __name__ == '__main__':
 
     sp_parse  = sp.add_parser('parse', help="Parse a plant extract document")
     sp_parse.add_argument('--ped', type=file, nargs='+',
-                            help='one or more plant extract documents to process - absolute path')
+        help='one or more plant extract documents to process - absolute path')
     sp_parse.add_argument('--xsd', type=file, nargs=1,
-                            help='override the default XML schema document for validation')
+        help='override the default XML schema document for validation')
     sp_parse.add_argument('--novalid', dest='validation', action='store_false',
-                            help='do not validate the given plant extract documents')
+                help='do not validate the given plant extract documents')
 
     args = parser.parse_args()
     #   Now for some post parsing output

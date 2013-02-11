@@ -36,8 +36,8 @@ class SunSpecData(object):
         """
         self.element = element
         if self.element is None:
-          self.exists = False
-          return
+            self.exists = False
+            return
         else:
             self.exists = True
 
@@ -50,7 +50,7 @@ class SunSpecData(object):
 
         self.device_records = list()
         for d_record in self.element.iter(DeviceRecord.element_name):
-          self.device_records.append(DeviceRecord(d_record))
+            self.device_records.append(DeviceRecord(d_record))
 
         self.parsed = False
 
@@ -75,7 +75,7 @@ class SunSpecData(object):
         """
         points = list()
         logging.debug(''.join(["SunSpecData.get_matching_points() looking for point_id:",
-                      str(point_id)]))
+                               str(point_id)]))
         for dr in self.device_records:
             models = dr.models
             if models is not None:
@@ -125,152 +125,160 @@ class SunSpecData(object):
 
 
 class DeviceRecord(object):
-  element_name = 'd'
+    element_name = 'd'
 
-  def __init__(self, element):
-    element = element
-    if element is None:
-      logging.warning("DeviceRecord.__init__() element provided is None")
-      return
+    def __init__(self, element):
+        element = element
+        if element is None:
+            logging.warning("DeviceRecord.__init__() element provided is None")
+            return
 
-    self.manufacturer = get_attr(element, 'man')
-    self.model = get_attr(element, 'mod')
-    self.serial_number = get_attr(element, 'sn')
-    self.logger_id = get_attr(element, 'lid')
-    self.logger_id_namespace = get_attr(element, 'ns')
-    self.device_interface_id = get_attr(element, 'if')
-    self.device_id = get_attr(element, 'id')
-    self.correlation_id = get_attr(element, 'cid')
+        self.manufacturer = get_attr(element, 'man')
+        self.model = get_attr(element, 'mod')
+        self.serial_number = get_attr(element, 'sn')
+        self.logger_id = get_attr(element, 'lid')
+        self.logger_id_namespace = get_attr(element, 'ns')
+        self.device_interface_id = get_attr(element, 'if')
+        self.device_id = get_attr(element, 'id')
+        self.correlation_id = get_attr(element, 'cid')
 
-    self._determine_id()
-    time = get_attr(element, 't')
-    if time is None:
-      raise SunSpecDataException("DeviceRecord 't' attribute is required.")
-    else:
-      # SunSpecData <d ... t="YYYY-MM-DDThh:mm:ssZ"
-      self.time = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
+        self._determine_id()
+        time = get_attr(element, 't')
+        if time is None:
+            raise SunSpecDataException("DeviceRecord 't' attribute is required.")
+        else:
+            # SunSpecData <d ... t="YYYY-MM-DDThh:mm:ssZ"
+            self.time = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
 
-    self.models = list()
-    for m in element.iter(Model.element_name):
-        m_id = m.get('id')
-        if m_id is not None:
-          logging.debug("DeviceRecord.__init__() adding model_id: " + m_id)
-          self.models.append(Model(self, m, m_id, self.time))
+        self.models = list()
+        for m in element.iter(Model.element_name):
+            m_id = m.get('id')
+            if m_id is not None:
+                logging.debug("DeviceRecord.__init__() adding model_id: " + m_id)
+                self.models.append(Model(self, m, m_id, self.time))
 
-  def _determine_id(self):
-    self.device_id_type = None
-    gs = None
-    if self.model and self.manufacturer and self.serial_number:
-      gs = "" + self.serial_number + self.model + self.manufacturer
-      self.device_id_type = 'Common Block'
-    elif self.logger_id and self.device_id:
-      gs = "" + self.device_id + self.logger_id
-      self.device_id_type = 'Logger-specific, user-assigned'
+    def _determine_id(self):
+        self.device_id_type = None
+        gs = None
+        if self.model and self.manufacturer and self.serial_number:
+            gs = "" + self.serial_number + self.model + self.manufacturer
+            self.device_id_type = 'Common Block'
+        elif self.logger_id and self.device_id:
+            gs = "" + self.device_id + self.logger_id
+            self.device_id_type = 'Logger-specific, user-assigned'
 
-    if gs is None:
-      s = "A Device must have a globally unique identifier, either man: mod: sn: or lid: id:"
-      raise SunSpecDataException(s)
+        if gs is None:
+            s = "A Device must have a globally unique identifier, either man: mod: sn: or lid: id:"
+            raise SunSpecDataException(s)
 
-    self.guid = int(hashlib.md5(gs).hexdigest(), 16)
-    return
+        self.guid = int(hashlib.md5(gs).hexdigest(), 16)
+        return
 
-  def parse(self):
-    logging.debug("SunSpecData.DeviceRecord.parse()")
-    for model in self.models:
-      model.parse()
+    def parse(self):
+        logging.debug("SunSpecData.DeviceRecord.parse()")
+        for model in self.models:
+            model.parse()
 
-  def tostring(self):
-    s = "Device" + os.linesep
-    s += " id_type:'" + self.device_id_type + "' guid:" + str(self.guid) + os.linesep
-    s += " man:" + self.manufacturer + " mod:" + self.model + " sn:" + self.serial_number + os.linesep
-    s += " lid:" + self.logger_id + " ns:" + self.logger_id_namespace
-    s += " id:" + self.device_id + os.linesep
-    s += " if:" + self.device_interface_id + " cid:" + self.correlation_id
+    def tostring(self):
+        s = "Device" + os.linesep
+        s += " id_type:'" + self.device_id_type + "' guid:" + str(self.guid) + os.linesep
+        s += " man:" + self.manufacturer + " mod:" + self.model + " sn:" + self.serial_number + os.linesep
+        s += " lid:" + self.logger_id + " ns:" + self.logger_id_namespace
+        s += " id:" + self.device_id + os.linesep
+        s += " if:" + self.device_interface_id + " cid:" + self.correlation_id
 
-    return s
+        return s
 
 
 class Model(object):
-  element_name = 'm'
+    element_name = 'm'
 
-  def __init__(self, device_record, element, id, dr_time):
-    self.device_record = device_record
-    self.dr_time = dr_time
-    self.points = list()
-    if element is None:
-      raise SunSpecDataException("SunSpec model element is required for a Model")
-    else:
-      self.element = element
+    def __init__(self, device_record, element, model_id, dr_time):
+        self.device_record = device_record
+        self.dr_time = dr_time
+        self.points = list()
+        if element is None:
+            raise SunSpecDataException("SunSpec model element is required for a Model")
+        else:
+            self.element = element
 
-    if id is None:
-      raise SunSpecDataException("SunSpec model element must have an id attribute")
-    else:
-      self.id = int(id)
+        if model_id is None:
+            raise SunSpecDataException("SunSpec model element must have an id attribute")
+        else:
+            self.model_id = int(model_id)
 
-    self.smdx = SMDX(element, id)
-    logging.debug('Model constructed for model_id:' + str(id))
+        self.smdx = SMDX(element, model_id)
+        logging.debug('Model constructed for model_id:' + str(model_id))
 
-  def parse(self):
-    logging.debug("Model.parse() model_id:" + str(self.id))
+    def parse(self):
+        """ Parse sunSpecData Model information
 
-    logging.info("Model.parse() instantiating Points")
-    for p in self.element.iter(Point.element_name):
-      self.points.append(Point(self, p))
+        """
+        logging.debug("Model.parse() model_id:" + str(self.model_id))
 
-    smdx_points = self.smdx.get_points()
-    logging.info("Model.parse() adding units from SMDXPoints to Points")
-    for p in self.points:
-      if p.id in smdx_points:
-        logging.info("Point.id:" + str(p.id) + " found in SMDX.model_id: " + str(self.id))
-        p.unit = smdx_points[p.id].units
-        p.type = smdx_points[p.id].type
-      else:
-        logging.warning(''.join(["Point.id:", str(p.id),
-                        " exists but shouldn't for SMDX.model_id: ", str(self.id)]))
+        logging.info("Model.parse() instantiating Points")
+        for p in self.element.iter(Point.element_name):
+            self.points.append(Point(self, p))
 
-    mand_met = False
-    if self._has_mandatory_points() is None:
-      mand_met = True
-    logging.debug("Model.parse() has all mandatory points? " + str(mand_met))
+        smdx_points = self.smdx.get_points()
+        logging.info("Model.parse() adding units from SMDXPoints to Points")
+        for p in self.points:
+            if p.id in smdx_points:
+                logging.info("Point.id:%s found in SMDX.model_id: %s".format(
+                    str(p.id), str(self.model_id))
+                )
+                p.unit = smdx_points[p.id].units
+                p.type = smdx_points[p.id].type
+            else:
+                logging.warning(''.join(
+                    ["Point.id:", str(p.id),
+                     " exists but shouldn't for SMDX.model_id: ",
+                     str(self.model_id)])
+                )
 
-  def get_matching_points(self, point_id):
-    """Get a list of points which match the given point_id
+        mand_met = False
+        if self._has_mandatory_points() is None:
+            mand_met = True
+        logging.debug("Model.parse() has all mandatory points? " + str(mand_met))
+
+    def get_matching_points(self, point_id):
+        """Get a list of points which match the given point_id
     """
-    points = list()
-    logging.info(''.join(["Model.get_matching_points() looking for point_id:",
-                 str(point_id)]))
-    for p in self.points:
-      logging.debug(''.join(["Model.get_matching_points() p.id:", p.id,
-                             " given point_id:", str(point_id)]))
-      if p.id == point_id:
-        points.append(p)
+        points = list()
+        logging.info(''.join(["Model.get_matching_points() looking for point_id:",
+                              str(point_id)]))
+        for p in self.points:
+            logging.debug(''.join(["Model.get_matching_points() p.id:", p.id,
+                                   " given point_id:", str(point_id)]))
+            if p.id == point_id:
+                points.append(p)
 
-    return points
+        return points
 
-  def _has_mandatory_points(self):
-    man_points = self.smdx.get_mandatory_points()
-    points = self.points
-    logging.debug("Model._has_mandatory_points()")
-    missing_mand = {}
+    def _has_mandatory_points(self):
+        man_points = self.smdx.get_mandatory_points()
+        points = self.points
+        logging.debug("Model._has_mandatory_points()")
+        missing_mand = {}
 
-    for sp in man_points.itervalues():
-      if sp.mandatory:
-        found = False
-        for p in points:
-            if sp.id == p.id:
-                logging.info("Found mandatory point:" + str(p.id))
-                found = True
-                break
+        for sp in man_points.itervalues():
+            if sp.mandatory:
+                found = False
+                for p in points:
+                    if sp.id == p.id:
+                        logging.info("Found mandatory point:" + str(p.id))
+                        found = True
+                        break
 
-        if not found:
-            logging.warning("Model.id:" + str(self.id) +
-                            " missing mandatory SMDXPoint.id:" + sp.id)
-            missing_mand[sp.id] = sp
+                if not found:
+                    logging.warning("Model.id:" + str(self.model_id) +
+                                    " missing mandatory SMDXPoint.id:" + sp.id)
+                    missing_mand[sp.id] = sp
 
-    return missing_mand
+        return missing_mand
 
-  def tostring(self):
-      return ''.join(['Model.id:', str(self.id), ' dr_time:', str(self.dr_time)])
+    def tostring(self):
+        return ''.join(['Model.id:', str(self.model_id), ' dr_time:', str(self.dr_time)])
 
 
 class Point(object):
@@ -295,40 +303,46 @@ class Point(object):
         return self._type
 
     def set_type(self, type_value):
+        """
+
+        :param type_value:
+        :return:
+        """
         self._type = type_value
         print self.id
         logging.info("Point.set_type() id:", self.id, " type:", self._type)
         if self._type == SP.UINT16 or self._type == SP.INT16 \
             or self._type == SP.INT32 or self._type == SP.ACC16 \
             or self._type == SP.ACC32:
-                self.value = int(self.value) # Convert into 32 bit signed
+            self.value = int(self.value) # Convert into 32 bit signed
         elif self._type == SP.FLOAT32:
             self.value = float(self.value)   # Convert into 64 bit float
         return
 
+    # noinspection PyShadowingBuiltins
     type = property(get_type, set_type)
 
-#     def __radd__(self, other):
-#         result = None
-#         if (self.type == SP.UINT16) or (self.type == SP.INT16) or (self.type == SP.INT32):
-#             print self.tostring()
-#             if (other is not None):
-#                 result = other + int(self.value)
-#             else:
-#                 result = int(self.value)
-#         elif self.type == SP.FLOAT32:
-#             if (other is not None):
-#                 return other + float(self.value)
-#             else:
-#                 return float(self.value)
-#         return result
-#
-#     def __add__(self, other):
-#         if self.type == SP.UINT16 or SP.INT16 or SP.INT32:
-#             result = int(self.value) + other
-#         elif self.type == SP.FLOAT32:
-#             result = float(self.value) + other
-#         return result
+    #     def __radd__(self, other):
+    #         result = None
+    #         if (self.type == SP.UINT16) or (self.type == SP.INT16) or (self.type == SP.INT32):
+    #             print self.tostring()
+    #             if (other is not None):
+    #                 result = other + int(self.value)
+    #             else:
+    #                 result = int(self.value)
+    #         elif self.type == SP.FLOAT32:
+    #             if (other is not None):
+    #                 return other + float(self.value)
+    #             else:
+    #                 return float(self.value)
+    #         return result
+    #
+    #     def __add__(self, other):
+    #         if self.type == SP.UINT16 or SP.INT16 or SP.INT32:
+    #             result = int(self.value) + other
+    #         elif self.type == SP.FLOAT32:
+    #             result = float(self.value) + other
+    #         return result
 
     def tostring(self):
         return ''.join(['Point.id:', self.id, ' x:', str(self.x), ' value:',
@@ -337,7 +351,6 @@ class Point(object):
 
 
 class SunSpecDataException(Exception):
-
     def __init__(self, argument):
         super(SunSpecDataException, self).__init__(argument)
         self.argument = argument
