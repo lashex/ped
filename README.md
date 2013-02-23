@@ -11,7 +11,7 @@ Using pip::
 
 Usage
 -------
-Typical usage looks like this::
+Typical `parse` usage looks like this::
 
     #!/usr/bin/env python
 
