@@ -54,7 +54,7 @@ class SunSpecData(object):
 
         self.parsed = False
 
-    def parse_data(self):
+    def parse_points(self):
         """Parse the SunSpecData block's Points
         """
         logging.debug("SunSpecData.parse()")

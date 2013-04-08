@@ -126,9 +126,9 @@ class PlantExtract(object):
         return
 
     def parse_data(self):
-        """Parse the sunSpecData block"""
+        """Parse the sunSpecData block's Points"""
         if self.sunspec_data.exists and not self.sunspec_data.parsed:
-            self.sunspec_data.parse_data()
+            self.sunspec_data.parse_points()
 
     def __str__(self):
         """Produces a string representation of the Plant Extract envelope"""
@@ -174,10 +174,11 @@ class Plant(object):
 
     @classmethod
     def create(cls, plant_id, locale="en-US", name="", notes="",
-               description="", activation_date=None, location=None):
+               description="", activation_date=None, location=None,
+               name_plate=None):
         """
 
-        :param plant_id:
+        :param plant_id: a UUID4 that uniquely identifies the plant, required
         :param locale:
         :param name:
         :param notes:
@@ -199,6 +200,7 @@ class Plant(object):
             plant.activation_date = dt.datetime.strptime(activation_date,
                                                          '%Y-%m-%d')
         plant.location=location
+        plant.name_plate=name_plate
         return plant
 
     def parse(self, element):
@@ -249,6 +251,13 @@ class PropertyContainer(object):
                 self.properties[prop_id].append(Property(prop_id, prop_type,
                                                          prop.text))
 
+    @classmethod
+    def create(self, props):
+        pc = PropertyContainer(None)
+        pc.properties = defaultdict(list)
+        for p in props:
+            pc.properties[p.id].append(p)
+        return pc
 
 class Property(object):
     element_name = 'property'
@@ -414,12 +423,18 @@ if __name__ == '__main__':
         ped = PlantExtract.create(
             Plant.create(
                 uuid4(),
-                activation_date="2012-12-02",
+                activation_date="2013-03-02",
                 location=Location.create(latitude=1.1, longitude=2.2,
                                          city="Redwood City",
-                                         state_province="CA")
+                                         state_province="CA"),
+                name_plate=NamePlate.create(props=[
+                    Property('installedDCCapacity', 'float', '6.5'),
+                    Property('installedACCapacity', 'float', '6.4')
+                ])
             ),
         )
+        # ped.sunspec_data =
+
         print etree.tostring(ped.xml, pretty_print=True)
         # ped = PlantExtract()
         # ped.parse(args.ped[0])
@@ -427,7 +442,7 @@ if __name__ == '__main__':
         # print ">> PlantExtract Plant"
         # print ped.plant
         # print ">> PlantExtract parsing sunSpecData"
-        # ped.parse_data()
+        # ped.parse_points()
         # print ">> PlantExtract completed parsing of sunSpecData"
         # print ped.sunspec_data  # the sunSpecData block
         # print ped.sunspec_data.device_records[0].models[0].smdx # SMDX info of model
