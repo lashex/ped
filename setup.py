@@ -16,7 +16,7 @@ import os
 from distutils.core import setup
 from setuptools import find_packages
 
-version = '0.3.2'
+version = '0.3.0'
 README = os.path.join(os.path.dirname(__file__), 'README.md')
 long_description = open(README).read()
 

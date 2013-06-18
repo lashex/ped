@@ -1,4 +1,4 @@
-0.3.0 -- PED creation given some standard blocks
+0.3.0 -- PED creation given standard blocks
 
 0.2.8 -- Added ped.is_ped() utility function and added __str__ methods
 
