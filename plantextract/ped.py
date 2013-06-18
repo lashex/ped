@@ -23,6 +23,8 @@ import datetime as dt
 from lxml import etree
 from sunspec_data import SunSpecData
 
+# TODO move all parsing out into PlantParser, LocationParser, etc... which will
+# TODO clean up the core objects.
 
 xsd_filename = "sunspec_plant_extract.xsd"
 xsd_dir = "xsd"
@@ -175,7 +177,8 @@ class Plant(object):
     @classmethod
     def create(cls, plant_id, locale="en-US", name="", notes="",
                description="", activation_date=None, location=None,
-               name_plate=None):
+               name_plate=None, design_elements=None, array=None,
+               equipment=None):
         """
 
         :param plant_id: a UUID4 that uniquely identifies the plant, required
@@ -188,6 +191,11 @@ class Plant(object):
             activation_date value must be compliant with the ISO 8601 date
             format: "YYYY-MM-DD”
         :param location:
+        :param name_plate:
+        :param design_elements:
+        :param array: a list of elements that describe the attributes of a PV
+            array
+        :param equipment:
         :return:
         """
         plant = Plant()
@@ -201,6 +209,9 @@ class Plant(object):
                                                          '%Y-%m-%d')
         plant.location=location
         plant.name_plate=name_plate
+        plant.design_elements = design_elements
+        plant.array = array
+        plant.equipment = equipment
         return plant
 
     def parse(self, element):
@@ -336,6 +347,20 @@ class NamePlate(PropertyContainer):
     def __init__(self, nameplate_element):
         super(NamePlate, self).__init__(nameplate_element)
 
+class DesignElements(PropertyContainer):
+    pass
+
+class Array(PropertyContainer):
+    @classmethod
+    def create(self, props, array_id=1):
+        self.array_id=array_id
+        return super(Array, self).create(props)
+
+class Equipment(PropertyContainer):
+    @classmethod
+    def create(self, props, equipment_type='meter'):
+        self.equipment_type=equipment_type
+        return super(Equipment, self).create(props)
 
 class Capabilities(PropertyContainer):
     element_name = 'capabilities'
@@ -430,8 +455,19 @@ if __name__ == '__main__':
                 name_plate=NamePlate.create(props=[
                     Property('installedDCCapacity', 'float', '6.5'),
                     Property('installedACCapacity', 'float', '6.4')
-                ])
-            ),
+                ]),
+                design_elements=DesignElements.create(props=[
+                    Property('plantType', 'string', 'commercial')
+                ]),
+                array=Array.create(props=[
+                    Property('description','string','Carport')
+                ], array_id=1),
+                equipment=Equipment.create(props=[
+                    Property('Mn', 'string', 'MeterManuf'),
+                    Property('Md', 'string', 'MeterModel'),
+                    Property('uncertainty', 'float', '0.5')
+                ], equipment_type='meter')
+            )
         )
         # ped.sunspec_data =
 
