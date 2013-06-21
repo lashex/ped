@@ -1,6 +1,6 @@
 0.3.0 -- PED creation given standard blocks
 
-0.2.8 -- Added ped.is_ped() utility function and added __str__ methods
+0.2.8 -- Added pedparser.is_ped() utility function and added __str__ methods
 
 0.2.7 -- More explicit dependency upon lxml 3.0.1 instead of anything >= 3.0
 

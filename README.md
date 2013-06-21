@@ -15,10 +15,10 @@ Typical `parse` usage looks like this::
 
     #!/usr/bin/env python
 
-    from plantextract.ped import PlantExtract
+    from plantextract.pedparser import PlantExtractParser
     from plantextract.smdx import SMDX
 
-    ped = PlantExtract()
+    ped = PlantExtractParser()
     ped.parse('ped-cls-to-process') # automatic parsing of envelope
     ped.parse_data()    # will parse an included sunSpecData block
     print ped.plant     # the Plant block
@@ -33,20 +33,32 @@ Typical `create` usage looks like this:
 
     #!/usr/bin/env python
 
-    from plantextract.ped import PlantExtract, Plant, Location, NamePlate
-    ped = PlantExtract.create(
-            Plant.create(
-              uuid4(),
-              activation_date="2013-03-02",
-              location=Location.create(latitude=1.1, longitude=2.2,
-                                       city="Redwood City",
-                                       state_province="CA"),
-              name_plate=NamePlate.create(props=[
+    from plantextract.ped import PlantExtract, Plant, Location
+    from plantextract.ped import NamePlate, Array, Equipment
+
+    ped = PlantExtract(
+        Plant(
+            uuid4(),
+            activation_date="2013-03-02",
+            location=Location(latitude=1.1, longitude=2.2,
+                                     city="Redwood City",
+                                     state_province="CA"),
+            name_plate=NamePlate(props=[
                 Property('installedDCCapacity', 'float', '6.5'),
                 Property('installedACCapacity', 'float', '6.4')
-              ])
-            ),
-            # ...etc...
-          )
+            ]),
+            design_elements=DesignElements(props=[
+                Property('plantType', 'string', 'commercial')
+            ]),
+            array=Array(props=[
+                Property('description','string','Carport')
+            ], array_id=1),
+            equipment=Equipment(props=[
+                Property('Mn', 'string', 'MeterManuf'),
+                Property('Md', 'string', 'MeterModel'),
+                Property('uncertainty', 'float', '0.5')
+            ], equipment_type='meter')
+        )
+    )
 
 Requires [lxml](http://lxml.de) 3.0.2.
