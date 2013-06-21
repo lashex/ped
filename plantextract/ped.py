@@ -16,121 +16,37 @@
 from uuid import UUID
 from uuid import uuid4
 from collections import defaultdict
-import os
 import logging
 import datetime as dt
 
-from lxml import etree
 from sunspec_data import SunSpecData
 
 # TODO move all parsing out into PlantParser, LocationParser, etc... which will
 # TODO clean up the core objects.
 
-xsd_filename = "sunspec_plant_extract.xsd"
-xsd_dir = "xsd"
 time_format = '%Y-%m-%dT%H:%M:%SZ'
-#   logger = logging.getLogger('ped') f =
-#   logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s') sh =
-#   logging.StreamHandler() sh.setFormatter(f) logger.addHandler(sh)
+# logger = logging.getLogger('ped')
+# f = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
+# sh = logging.StreamHandler()
+# sh.setFormatter(f)
+# logger.addHandler(sh)
 
 
 class PlantExtract(object):
-    """ A Plant Extract Document processor supporting straightforward
-        interaction with information from each of the standard blocks.
+    """ A Plant Extract Document
     """
-
-    element_name = "sunSpecPlantExtract"
-
-    def __init__(self):
-        logging.debug("PlantExtract.__init__()")
-        self.xml = None
-
-    @classmethod
-    def create(cls, plant, ssd=None):
+    def __init__(self, plant, seqId='1', lastSeqId='1', ssd=None):
         """Create a plant extract document given parameters and data for the
            standard blocks.
         :param plant: a Plant object with at least a PlantID
         :param ssd: a sunspec_data.DeviceRecord[]
         """
         logging.debug("PlantExtract.create()")
-
-        nowt = dt.datetime.utcnow()
-
-        ped = PlantExtract()
-
-        print plant
-        ped.xml = etree.Element(PlantExtract.element_name, seqId="1",
-                                lastSeqId="1", t=nowt.strftime(time_format))
-        p = etree.SubElement(ped.xml, Plant.element_name,
-                             id=str(plant.id.hex), v="1", locale=plant.locale)
-        etree.SubElement(p, "name").text = plant.name
-        etree.SubElement(p, "description").text = plant.description
-        etree.SubElement(p, "notes").text = plant.notes
-        if plant.activation_date is not None:
-            etree.SubElement(p, "activationDate").text = \
-                plant.activation_date.strftime('%Y-%m-%d')
-        return ped
-
-    def parse(self, ped_file):
-        """Parse the plant extract document (minus sunSpecData)"""
-        logging.debug("PlantExtract.parse()")
-        # open file and validate
-        this_dir, this_filename = os.path.split(__file__)
-        xsd_file = os.path.join(this_dir, xsd_dir, xsd_filename)
-        self.ped_file = ped_file
-        self.tree = etree.parse(self.ped_file)
-        schema_doc = etree.parse(xsd_file)
-        self.schema = etree.XMLSchema(schema_doc)
-        logging.info("PlantExtract.parse() valid_xml:" + str(self.valid_xml()))
-        # now parse the Plant Extract
-        self.envelope = self.tree.getroot()
-        if self.envelope is None:
-            raise PlantExtractException("sunSpecPlantExtract root not found.")
-
-        logging.debug("PlantExtract.parse()")
-        env = self.envelope
-        time = env.get('t')
-        if time is None:
-            raise PlantExtractException("sunSpecPlantExtract root node 't' attribute is required.")
-        else:
-            # Plant Extract t="YYYY-MM-DDThh:mm:ssZ"
-            self.time = dt.datetime.strptime(time, time_format)
-
-        # check for sunSpecPlantExtract version, assume '1' if absent
-        v = env.get('v')
-        if v is not None:
-            self.version = int(v)
-        else:
-            self.version = 1
-
-        # check for sunSpecPlantExtract seqId, assume '1' if absent
-        sid = env.get('seqId')
-        if sid is not None:
-            self.seqId = int(sid)
-        else:
-            self.seqId = 1
-
-        # check for sunSpecPlantExtract lastSeqId, assume '1' if absent
-        lid = env.get('lastSeqId')
-        if lid is not None:
-            self.lastSeqId = int(lid)
-        else:
-            self.lastSeqId = 1
-
-        if self.seqId > self.lastSeqId:
-            raise PlantExtractException("seqId can't be larger than the lastSeqId")
-
-        self.plant = Plant().parse(self.envelope.find(Plant.element_name))
-        self.sunspec_data = SunSpecData().parse_block(self.envelope.find(SunSpecData.element_name))
-        # TODO: sunSpecMetadata
-        # TODO: strings
-        # TODO: extract extensions
-        return
-
-    def parse_data(self):
-        """Parse the sunSpecData block's Points"""
-        if self.sunspec_data.exists and not self.sunspec_data.parsed:
-            self.sunspec_data.parse_points()
+        self.version = 2
+        self.seqId = seqId
+        self.lastSeqId = lastSeqId
+        self.time = dt.datetime.utcnow().strftime(time_format)
+        self.plant = plant
 
     def __str__(self):
         """Produces a string representation of the Plant Extract envelope"""
@@ -142,40 +58,9 @@ class PlantExtract(object):
         """
         return self.seqId == self.lastSeqId
 
-    def valid_xml(self, assert_=False):
-        """Determines if this Plant Extract is valid XML in compliance with the XSD"""
-        if assert_:
-            self.schema.assert_(self.tree)
-            self.valid = True
-        else:
-            self.valid = self.schema.validate(self.tree)
-
-        return self.valid
-
-    @classmethod
-    def is_ped(cls, ped_file):
-        """Convenience method to determine if the given file is a Plant Extract
-        """
-        is_ped_file = False
-        try:
-            ped = PlantExtract()
-            ped.parse(ped_file)
-            is_ped_file = True
-        except PlantExtractException, pexe:
-            is_ped_file = False
-            logging.exception("PlantExtract.is_ped() PlantExtractException: %s", pexe)
-        finally:
-            return is_ped_file
-
 
 class Plant(object):
-    element_name = 'plant'
-
-    def __init__(self):
-        logging.debug("Plant.__init__()")
-
-    @classmethod
-    def create(cls, plant_id, locale="en-US", name="", notes="",
+    def __init__(self, plant_id, locale="en-US", name="", notes="",
                description="", activation_date=None, location=None,
                name_plate=None, design_elements=None, array=None,
                equipment=None):
@@ -198,95 +83,43 @@ class Plant(object):
         :param equipment:
         :return:
         """
-        plant = Plant()
-        plant.id = plant_id
-        plant.locale = locale
-        plant.name = name
-        plant.notes = notes
-        plant.description = description
+        self.version = 2
+        self.plant_id = plant_id
+        self.locale = locale
+        self.name = name
+        self.notes = notes
+        self.description = description
         if activation_date is not None:
-            plant.activation_date = dt.datetime.strptime(activation_date,
+            self.activation_date = dt.datetime.strptime(activation_date,
                                                          '%Y-%m-%d')
-        plant.location=location
-        plant.name_plate=name_plate
-        plant.design_elements = design_elements
-        plant.array = array
-        plant.equipment = equipment
-        return plant
-
-    def parse(self, element):
-        self.element = pe = element
-        if pe is None:
-            raise PlantExtractException("plant element not found")
-
-        plant_id = pe.get('id')
-        if plant_id is None:
-            raise PlantExtractException("plant 'id' attribute is required.")
-        else:
-            self.id = UUID(plant_id)
-
-        v = pe.get('v')
-        if v is not None:
-            self.version = int(v)
-
-        self.locale = pe.get('locale')
-        self.name = get_node_value(pe, 'name')
-        self.description = get_node_value(pe, 'description')
-        self.notes = get_node_value(pe, 'notes')
-        ad = get_node_value(pe, 'activationDate')
-        if ad is not None:
-            self.activation_date = dt.datetime.strptime(ad, '%Y-%m-%d')
-
-        self.location = Location(pe.find(Location.element_name))
-        self.name_plate = NamePlate(pe.find(NamePlate.element_name))
-        self.capabilities = Capabilities(pe.find(Capabilities.element_name))
-        self.participants = list()
-        for participant in self.element.iter(Participant.element_name):
-            self.participants.append(Participant(participant))
+        self.location = location
+        self.name_plate = name_plate
+        self.design_elements = design_elements
+        self.array = array
+        self.equipment = equipment
 
     def tostring(self):
         """Produces a string representation of some parsed Plant values """
-        return ''.join(["Plant id:", self.id.hex, ", v:", str(self.version),
+        return ''.join(["Plant id:", self.plant_id.hex, ", v:", str(self.version),
                         ", name:", self.name, ", locale:", self.locale,
                         ", description:", self.description])
 
 
 class PropertyContainer(object):
-    def __init__(self, my_element):
+    def __init__(self, props):
         self.properties = defaultdict(list)
-        self.element = my_element
-        if self.element is not None:
-            for prop in self.element.iter(Property.element_name):
-                prop_id = prop.get('id')
-                prop_type = prop.get('type')
-                self.properties[prop_id].append(Property(prop_id, prop_type,
-                                                         prop.text))
-
-    @classmethod
-    def create(self, props):
-        pc = PropertyContainer(None)
-        pc.properties = defaultdict(list)
         for p in props:
-            pc.properties[p.id].append(p)
-        return pc
+            self.properties[p.id].update(p)
 
 class Property(object):
-    element_name = 'property'
-
     def __init__(self, prop_id, prop_type, text):
-        self.id = prop_id
+        self.prop_id = prop_id
         self.type = prop_type
         self.text = text
 
 
 class Location(PropertyContainer):
-    element_name = 'location'
-
-    def __init__(self, location_element):
-        super(Location, self).__init__(location_element)
-
-    @classmethod
-    def create(cls, latitude=0.0, longitude=0.0, line1="", line2="", city="",
+    def __init__(self, latitude=0.0, longitude=0.0, line1="", line2="", city="",
                state_province="", country="", postal="", elevation="",
                timezone="", properties=defaultdict(list)):
         """ Create a Location object using the given information.
@@ -313,86 +146,50 @@ class Location(PropertyContainer):
         :param properties:
         :return location: the created Location object
         """
-        loc = Location(None)
-        loc.latitude = str(latitude)
-        loc.longitude = str(longitude)
-        loc.line1 = line1
-        loc.line2 = line2
-        loc.city = city
-        loc.stateProvince = state_province
-        loc.country = country
-        loc.postal = postal
-        loc.elevation = elevation
-        loc.timezone = timezone
-        loc.properties = properties
-        return loc
 
-    def parse(self):
-        le = self.element
-        self.latitude = get_node_value(le, 'latitude')
-        self.longitude = get_node_value(le, 'longitude')
-        self.line1 = get_node_value(le, 'line1')
-        self.line2 = get_node_value(le, 'line2')
-        self.city = get_node_value(le, 'city')
-        self.stateProvince = get_node_value(le, 'stateProvince')
-        self.country = get_node_value(le, 'country')
-        self.postal = get_node_value(le, 'postal')
-        self.elevation = get_node_value(le, 'elevation')
-        self.timezone = get_node_value(le, 'timezone')
+        super(Location, self).__init__(properties)
+
+        self.latitude = str(latitude)
+        self.longitude = str(longitude)
+        self.line1 = line1
+        self.line2 = line2
+        self.city = city
+        self.stateProvince = state_province
+        self.country = country
+        self.postal = postal
+        self.elevation = elevation
+        self.timezone = timezone
+        self.properties = properties
 
 
 class NamePlate(PropertyContainer):
-    element_name = 'namePlate'
-
-    def __init__(self, nameplate_element):
-        super(NamePlate, self).__init__(nameplate_element)
+    pass
 
 class DesignElements(PropertyContainer):
     pass
 
 class Array(PropertyContainer):
-    @classmethod
-    def create(self, props, array_id=1):
+    def __init__(self, props, array_id=1):
+        super(Array, self).__init__(props)
         self.array_id=array_id
-        return super(Array, self).create(props)
 
 class Equipment(PropertyContainer):
-    @classmethod
-    def create(self, props, equipment_type='meter'):
+    def __init__(self, props, equipment_type='meter'):
+        super(Equipment, self).__init__(props)
         self.equipment_type=equipment_type
-        return super(Equipment, self).create(props)
 
 class Capabilities(PropertyContainer):
-    element_name = 'capabilities'
-
-    def __init__(self, capabilities_element):
-        super(Capabilities, self).__init__(capabilities_element)
-        print self.properties
-
+    pass
 
 class Participant(PropertyContainer):
-    element_name = 'participant'
-
-    def __init__(self, participant_element):
-        super(Participant, self).__init__(participant_element)
-        self.type = get_node_value(self.element, 'type')
+    def __init__(self, props, participant_type="owner"):
+        super(Participant, self).__init__(props)
+        self.participant_type = participant_type
 
 
 class PlantExtractException(Exception):
     pass
 
-
-#####################
-#   Utility functions
-def get_node_value(node, node_name):
-    node_value = None
-
-    if node is None:
-        return None
-    elif node.find(node_name) is not None:
-        node_value = node.find(node_name).text
-
-    return node_value
 
 ########################
 #   command line parsing
@@ -400,23 +197,15 @@ if __name__ == '__main__':
     import argparse
 
 
-    parser = argparse.ArgumentParser(description='Process or create Plant Extract Documents')
+    parser = argparse.ArgumentParser(description='Create a Plant Extract Document')
     parser.add_argument('--log', dest='loglevel', default='WARNING',
-                        help='set the log level (default:WARNING)')
+                        help='set the log level [default:WARNING]')
     parser.add_argument('--test', dest='activate_tests', action='store_true',
                         help='activate doctests for the Plant Extract class')
     sp = parser.add_subparsers()
 
     sp_create = sp.add_parser('create',
                               help="Create a plant extract document")
-
-    sp_parse = sp.add_parser('parse', help="Parse a plant extract document")
-    sp_parse.add_argument('--ped', type=file, nargs='+',
-                          help='one or more plant extract documents to process - absolute path')
-    sp_parse.add_argument('--xsd', type=file, nargs=1,
-                          help='override the default XML schema document for validation')
-    sp_parse.add_argument('--novalid', dest='validation', action='store_false',
-                          help='do not validate the given plant extract documents')
 
     args = parser.parse_args()
     #   Now for some post parsing output
@@ -444,25 +233,24 @@ if __name__ == '__main__':
     ped.sunspec_data.get_points_in_period(start_time, end_time, 'TotWh')
     """
     else:
-        # xsd_full_file = os.path.join(os.getcwd(), xsd_dir, xsd_filename)
-        ped = PlantExtract.create(
-            Plant.create(
+        ped = PlantExtract(
+            Plant(
                 uuid4(),
                 activation_date="2013-03-02",
-                location=Location.create(latitude=1.1, longitude=2.2,
+                location=Location(latitude=1.1, longitude=2.2,
                                          city="Redwood City",
                                          state_province="CA"),
-                name_plate=NamePlate.create(props=[
+                name_plate=NamePlate(props=[
                     Property('installedDCCapacity', 'float', '6.5'),
                     Property('installedACCapacity', 'float', '6.4')
                 ]),
-                design_elements=DesignElements.create(props=[
+                design_elements=DesignElements(props=[
                     Property('plantType', 'string', 'commercial')
                 ]),
-                array=Array.create(props=[
+                array=Array(props=[
                     Property('description','string','Carport')
                 ], array_id=1),
-                equipment=Equipment.create(props=[
+                equipment=Equipment(props=[
                     Property('Mn', 'string', 'MeterManuf'),
                     Property('Md', 'string', 'MeterModel'),
                     Property('uncertainty', 'float', '0.5')
@@ -471,7 +259,7 @@ if __name__ == '__main__':
         )
         # ped.sunspec_data =
 
-        print etree.tostring(ped.xml, pretty_print=True)
+        # print etree.tostring(ped.xml, pretty_print=True)
         # ped = PlantExtract()
         # ped.parse(args.ped[0])
         # print ped
