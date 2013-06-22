@@ -20,9 +20,9 @@ import logging
 import datetime as dt
 
 from lxml import etree
-from ssd import SunSpecDataParser
+from ssparser import SunSpecDataParser
 
-# TODO see if these Parser classes can be flatter and dump Python objects
+# TODO get these Parser classes flatter and dumping non-Parser objects
 
 xsd_filename = "sunspec_plant_extract.xsd"
 xsd_dir = "xsd"

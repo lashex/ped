@@ -34,12 +34,10 @@ class SunSpecDataParser(object):
     def parse_block(self, element):
         """Parse the SunSpecData block device records, minus Points
         """
-        self.element = element
-        if self.element is None:
-            self.exists = False
+        if element is None:
             return
-        else:
-            self.exists = True
+
+        self.element = element
 
         # check for sunSpecData version, assume '1' if absent
         v = self.element.get('v')

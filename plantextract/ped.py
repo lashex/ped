@@ -19,7 +19,7 @@ from collections import defaultdict
 import logging
 import datetime as dt
 
-from sunspec_data import SunSpecData
+from sunspec import SunSpecData
 
 # TODO move all parsing out into PlantParser, LocationParser, etc... which will
 # TODO clean up the core objects.
