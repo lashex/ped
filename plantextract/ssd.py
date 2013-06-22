@@ -25,7 +25,7 @@ from smdx import SMDXPoint as SP
 # logger = logging.getLogger('ped.ssd')
 
 
-class SunSpecData(object):
+class SunSpecDataParser(object):
     element_name = 'sunSpecData'
 
     def __init__(self):

@@ -98,7 +98,7 @@ class Plant(object):
         self.array = array
         self.equipment = equipment
 
-    def tostring(self):
+    def __str__(self):
         """Produces a string representation of some parsed Plant values """
         return ''.join(["Plant id:", self.plant_id.hex, ", v:", str(self.version),
                         ", name:", self.name, ", locale:", self.locale,
@@ -109,13 +109,23 @@ class PropertyContainer(object):
     def __init__(self, props):
         self.properties = defaultdict(list)
         for p in props:
-            self.properties[p.id].update(p)
+            self.properties[p.prop_id].append(p)
+
+    def __str__(self):
+        pc = ''
+        for k in self.properties:
+            pc += str(self.properties[k]) + ' '
+        return pc
 
 class Property(object):
     def __init__(self, prop_id, prop_type, text):
         self.prop_id = prop_id
         self.type = prop_type
         self.text = text
+
+    def __str__(self):
+        return ''.join(['Property prop_id:', str(self.prop_id), ', type:',
+                        str(self.type), ', text:', str(self.text)])
 
 
 class Location(PropertyContainer):
@@ -161,6 +171,13 @@ class Location(PropertyContainer):
         self.timezone = timezone
         self.properties = properties
 
+    def __str__(self):
+        return ''.join(["Location latitude:", self.latitude, ", longitude:",
+                        str(self.longitude), ", line1:", str(self.line1),
+                        ", line2:", str(self.line2), ", city:", str(self.city),
+                        ", stateProvince:", str(self.stateProvince), ", country:",
+                        str(self.country)])
+
 
 class NamePlate(PropertyContainer):
     pass
@@ -202,10 +219,10 @@ if __name__ == '__main__':
                         help='set the log level [default:WARNING]')
     parser.add_argument('--test', dest='activate_tests', action='store_true',
                         help='activate doctests for the Plant Extract class')
-    sp = parser.add_subparsers()
-
-    sp_create = sp.add_parser('create',
-                              help="Create a plant extract document")
+    # sp = parser.add_subparsers()
+    #
+    # sp_create = sp.add_parser('create',
+    #                           help="Create a plant extract document")
 
     args = parser.parse_args()
     #   Now for some post parsing output
@@ -257,6 +274,13 @@ if __name__ == '__main__':
                 ], equipment_type='meter')
             )
         )
+
+        print ped
+        print ped.plant
+        print ped.plant.location
+        print ped.plant.name_plate
+        print ped.plant.equipment
+
         # ped.sunspec_data =
 
         # print etree.tostring(ped.xml, pretty_print=True)

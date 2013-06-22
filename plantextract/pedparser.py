@@ -20,7 +20,7 @@ import logging
 import datetime as dt
 
 from lxml import etree
-from sunspec_data import SunSpecData
+from ssd import SunSpecDataParser
 
 # TODO see if these Parser classes can be flatter and dump Python objects
 
