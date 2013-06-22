@@ -93,7 +93,9 @@ class PlantExtractParser(object):
             raise PlantExtractException("seqId can't be larger than the lastSeqId")
 
         self.plant = PlantParser().parse(self.envelope.find(PlantParser.element_name))
-        self.sunspec_data = SunSpecData().parse_block(self.envelope.find(SunSpecData.element_name))
+        self.sunspec_data = SunSpecDataParser().parse_block(
+            self.envelope.find(SunSpecDataParser.element_name)
+        )
         # TODO: sunSpecMetadata
         # TODO: strings
         # TODO: extract extensions

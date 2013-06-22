@@ -49,8 +49,8 @@ class SunSpecDataParser(object):
             self.version = 1
 
         self.device_records = list()
-        for d_record in self.element.iter(DeviceRecord.element_name):
-            self.device_records.append(DeviceRecord(d_record))
+        for d_record in self.element.iter(DeviceRecordParser.element_name):
+            self.device_records.append(DeviceRecordParser(d_record))
 
         self.parsed = False
 
@@ -124,7 +124,7 @@ class SunSpecDataParser(object):
                         ' device record count: ', str(len(self.device_records))])
 
 
-class DeviceRecord(object):
+class DeviceRecordParser(object):
     element_name = 'd'
 
     def __init__(self, element):
@@ -151,11 +151,11 @@ class DeviceRecord(object):
             self.time = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
 
         self.models = list()
-        for m in element.iter(Model.element_name):
+        for m in element.iter(ModelParser.element_name):
             m_id = m.get('id')
             if m_id is not None:
                 logging.debug("DeviceRecord.__init__() adding model_id: " + m_id)
-                self.models.append(Model(self, m, m_id, self.time))
+                self.models.append(ModelParser(self, m, m_id, time))
 
     def _determine_id(self):
         self.device_id_type = None
@@ -190,7 +190,7 @@ class DeviceRecord(object):
         return s
 
 
-class Model(object):
+class ModelParser(object):
     element_name = 'm'
 
     def parse(self, device_record, element, model_id, dr_time):
@@ -216,8 +216,8 @@ class Model(object):
         logging.debug("Model.parse() model_id:" + str(self.model_id))
 
         logging.info("Model.parse() instantiating Points")
-        for p in self.element.iter(Point.element_name):
-            self.points.append(Point(self, p))
+        for p in self.element.iter(PointParser.element_name):
+            self.points.append(PointParser(self, p))
 
         smdx_points = self.smdx.get_points()
         logging.info("Model.parse() adding units from SMDXPoints to Points")
@@ -242,7 +242,7 @@ class Model(object):
 
     def get_matching_points(self, point_id):
         """Get a list of points which match the given point_id
-    """
+        """
         points = list()
         logging.info(''.join(["Model.get_matching_points() looking for point_id:",
                               str(point_id)]))
@@ -280,7 +280,7 @@ class Model(object):
         return ''.join(['Model.id:', str(self.model_id), ' dr_time:', str(self.dr_time)])
 
 
-class Point(object):
+class PointParser(object):
     element_name = 'p'
 
     def __init__(self, model, element):
