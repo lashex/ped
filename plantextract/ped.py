@@ -18,6 +18,7 @@ from uuid import uuid4
 from collections import defaultdict
 import logging
 import datetime as dt
+import json
 
 from sunspec import SunSpecData
 
@@ -25,11 +26,11 @@ from sunspec import SunSpecData
 # TODO clean up the core objects.
 
 time_format = '%Y-%m-%dT%H:%M:%SZ'
-# logger = logging.getLogger('ped')
-# f = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
-# sh = logging.StreamHandler()
-# sh.setFormatter(f)
-# logger.addHandler(sh)
+logger = logging.getLogger('ped')
+f = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
+sh = logging.StreamHandler()
+sh.setFormatter(f)
+logger.addHandler(sh)
 
 
 class PlantExtract(object):
@@ -41,8 +42,8 @@ class PlantExtract(object):
         :param plant: a Plant object with at least a PlantID
         :param ssd: a sunspec_data.DeviceRecord[]
         """
-        logging.debug("PlantExtract.create()")
-        self.version = 2
+        logger.debug("PlantExtract.create()")
+        self.version = '2'
         self.seqId = seqId
         self.lastSeqId = lastSeqId
         self.time = dt.datetime.utcnow().strftime(time_format)
@@ -57,6 +58,9 @@ class PlantExtract(object):
         """Determines if this Plant Extract is the last extract in a set
         """
         return self.seqId == self.lastSeqId
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=2)
 
 
 class Plant(object):
@@ -90,8 +94,11 @@ class Plant(object):
         self.notes = notes
         self.description = description
         if activation_date is not None:
-            self.activation_date = dt.datetime.strptime(activation_date,
-                                                         '%Y-%m-%d')
+            # validate given activation date complies with format
+            ad = dt.datetime.strptime(activation_date, '%Y-%m-%d')
+            # convert back into string
+            self.activation_date = ad.strftime('%Y-%m-%d')
+
         self.location = location
         self.name_plate = name_plate
         self.design_elements = design_elements
@@ -100,16 +107,23 @@ class Plant(object):
 
     def __str__(self):
         """Produces a string representation of some parsed Plant values """
-        return ''.join(["Plant id:", self.plant_id.hex, ", v:", str(self.version),
+        return ''.join(["Plant id:", self.plant_id, ", v:", str(self.version),
                         ", name:", self.name, ", locale:", self.locale,
                         ", description:", self.description])
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=2)
 
 
 class PropertyContainer(object):
     def __init__(self, props):
-        self.properties = defaultdict(list)
+        #self.properties = defaultdict(list)
+        self.properties = {}
         for p in props:
-            self.properties[p.prop_id].append(p)
+            self.properties[p.prop_id] = p
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=2)
 
     def __str__(self):
         pc = ''
@@ -231,7 +245,7 @@ if __name__ == '__main__':
     if args.loglevel is not None:
         loglevel = args.loglevel.upper()
         print ">> Setting loglevel to: " + loglevel
-        logging.getLogger().setLevel(loglevel)
+        logger.setLevel(loglevel)
 
     if args.activate_tests is True:
         """ Run some tests on the PlantExtract class
@@ -252,7 +266,7 @@ if __name__ == '__main__':
     else:
         ped = PlantExtract(
             Plant(
-                uuid4(),
+                uuid4().urn,
                 activation_date="2013-03-02",
                 location=Location(latitude=1.1, longitude=2.2,
                                          city="Redwood City",
@@ -280,6 +294,8 @@ if __name__ == '__main__':
         print ped.plant.location
         print ped.plant.name_plate
         print ped.plant.equipment
+
+        print "JSON PED", ped.toJSON()
 
         # ped.sunspec_data =
 
