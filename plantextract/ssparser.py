@@ -153,7 +153,9 @@ class DeviceRecordParser(object):
             m_id = m.get('id')
             if m_id is not None:
                 logging.debug("DeviceRecord.__init__() adding model_id: " + m_id)
-                self.models.append(ModelParser(self, m, m_id, time))
+                mp = ModelParser()
+                mp.parse(m, m_id, time)
+                self.models.append(mp)
 
     def _determine_id(self):
         self.device_id_type = None
@@ -191,8 +193,7 @@ class DeviceRecordParser(object):
 class ModelParser(object):
     element_name = 'm'
 
-    def parse(self, device_record, element, model_id, dr_time):
-        self.device_record = device_record
+    def parse(self, element, model_id, dr_time):
         self.dr_time = dr_time
         self.points = list()
         if element is None:
@@ -287,7 +288,7 @@ class PointParser(object):
         self.x = element.get('x')
         self.value = element.text
         self.units = None
-        self.type = None
+        self._type = None
 
         time = element.get('t')
         if time is None:
@@ -308,10 +309,10 @@ class PointParser(object):
         self._type = type_value
         print self.id
         logging.info("Point.set_type() id:", self.id, " type:", self._type)
-        if self._type == SP.UINT16 or self._type == SP.INT16 \
-            or self._type == SP.INT32 or self._type == SP.ACC16 \
-            or self._type == SP.ACC32:
-                self.value = int(self.value)  # Convert into 32 bit signed
+        if (self._type == SP.UINT16 or self._type == SP.INT16
+            or self._type == SP.INT32 or self._type == SP.ACC16
+            or self._type == SP.ACC32):
+            self.value = int(self.value)  # Convert into 32 bit signed
         elif self._type == SP.FLOAT32:
             self.value = float(self.value)   # Convert into 64 bit float
         return

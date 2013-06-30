@@ -15,5 +15,8 @@
 class SunSpecData(object):
     pass
 
+class SunSpecIntervalData(object):
+    pass
+
 class SunSpecAggregatedData(object):
     pass
