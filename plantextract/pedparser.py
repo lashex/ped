@@ -20,6 +20,7 @@ import logging
 import datetime as dt
 
 from lxml import etree
+from ped import PlantExtract, Plant
 from ssparser import SunSpecDataParser
 
 # TODO get these Parser classes flatter and dumping non-Parser objects
@@ -68,28 +69,30 @@ class PlantExtractParser(object):
             # Plant Extract t="YYYY-MM-DDThh:mm:ssZ"
             self.time = dt.datetime.strptime(time, time_format)
 
-        # check for sunSpecPlantExtract version, assume '1' if absent
+        # check for sunSpecPlantExtract version, assume '2' if absent
         v = env.get('v')
         if v is not None:
             self.version = int(v)
         else:
-            self.version = 1
+            self.version = '2'
 
         # check for sunSpecPlantExtract seqId, assume '1' if absent
         sid = env.get('seqId')
         if sid is not None:
-            self.seqId = int(sid)
+            int(sid)
+            self.seqId = sid
         else:
-            self.seqId = 1
+            self.seqId = '1'
 
         # check for sunSpecPlantExtract lastSeqId, assume '1' if absent
         lid = env.get('lastSeqId')
         if lid is not None:
-            self.lastSeqId = int(lid)
+            int(lid)
+            self.lastSeqId = lid
         else:
-            self.lastSeqId = 1
+            self.lastSeqId = '1'
 
-        if self.seqId > self.lastSeqId:
+        if int(self.seqId) > int(self.lastSeqId):
             raise PlantExtractException("seqId can't be larger than the lastSeqId")
 
         self.plant = PlantParser().parse(self.envelope.find(PlantParser.element_name))
@@ -125,6 +128,15 @@ class PlantExtractParser(object):
             self.valid = self.schema.validate(self.tree)
 
         return self.valid
+
+    def objectify(self):
+        """ Creates and returns a non-parsing Python representation of the Plant
+            Extract Document.
+        """
+        ped = PlantExtract(self.plant.objectify(), self.seqId, self.lastSeqId)
+        ped.time = self.time
+        return ped
+
 
     # @classmethod
     # def is_ped(cls, ped_file):

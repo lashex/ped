@@ -15,8 +15,19 @@
 class SunSpecData(object):
     pass
 
+class DeviceRecord(object):
+    pass
+
+class Model(object):
+    pass
+
+class Point(object):
+    pass
+
+
 class SunSpecIntervalData(object):
     pass
+
 
 class SunSpecAggregatedData(object):
     pass
