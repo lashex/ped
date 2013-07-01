@@ -16,7 +16,7 @@ import os
 from distutils.core import setup
 from setuptools import find_packages
 
-version = '0.3.0'
+version = '0.2.9'
 README = os.path.join(os.path.dirname(__file__), 'README.md')
 long_description = open(README).read()
 
@@ -25,12 +25,13 @@ setup(name='plantextract',
       description='Python Plant Extract Document processor',
       long_description = long_description,
       author='Brett Francis',
+      author_email='brett@gridward.com',
       url='https://github.com/lashex/ped.git',
       packages=['plantextract'],
       # packages=find_packages(),
       include_package_data=True,
       license='Apache License, Version 2.0',
-      install_requires=['lxml == 3.0.2'],
+      install_requires=['lxml == 3.2.1'],
       keywords = "sunspec plant extract",
       classifiers=['Development Status :: 2 - Pre-Alpha',
                    'Intended Audience :: Developers',

@@ -18,16 +18,16 @@ Typical `parse` usage looks like this::
     from plantextract.pedparser import PlantExtractParser
     from plantextract.smdx import SMDX
 
-    ped = PlantExtractParser()
-    ped.parse('ped-cls-to-process') # automatic parsing of envelope
-    ped.parse_data()    # will parse an included sunSpecData block
-    print ped.plant     # the Plant block
-    print ped.plant.name    # the Plant's name attribute
+    pedp = PlantExtractParser()
+    pedp.parse('ped-cls-to-process') # automatic parsing of envelope
+    pedp.parse_data()    # will parse an included sunSpecData block
+    print pedp.plant     # the Plant block
+    print pedp.plant.name    # the Plant's name attribute
     # ...etc...
 
-    print ped.sunspec_data  # the sunSpecData block
-    print ped.sunspec_data.device_records[0].models[0].smdx # SMDX info of model
-    print ped.sunspec_data.device_records[0].models[0].points[0] # block structure
+    print pedp.sunspec_data  # the sunSpecData block
+    print pedp.sunspec_data.device_records[0].models[0].smdx # SMDX info of model
+    print pedp.sunspec_data.device_records[0].models[0].points[0] # block structure
 
 Typical `create` usage looks like this:
 
@@ -61,4 +61,4 @@ Typical `create` usage looks like this:
         )
     )
 
-Requires [lxml](http://lxml.de) 3.0.2.
+Requires [lxml](http://lxml.de) 3.2.1.
