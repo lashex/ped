@@ -13,8 +13,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-from uuid import UUID
-from uuid import uuid4
+import uuid
 from collections import defaultdict
 import logging
 import datetime as dt
@@ -88,7 +87,7 @@ class Plant(object):
         :return:
         """
         self.version = 2
-        self.plant_id = plant_id
+        self.plant_id = uuid.UUID(plant_id).hex
         self.locale = locale
         self.name = name
         self.notes = notes
@@ -266,7 +265,7 @@ if __name__ == '__main__':
     else:
         ped = PlantExtract(
             Plant(
-                uuid4().urn,
+                uuid.uuid4().urn,
                 activation_date="2013-03-02",
                 location=Location(latitude=1.1, longitude=2.2,
                                          city="Redwood City",
