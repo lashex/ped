@@ -19,7 +19,8 @@ import os
 import logging
 import datetime as dt
 
-from lxml import etree
+#from lxml import etree
+import xml.etree.ElementTree as ET
 from ped import PlantExtract, Plant
 from ssparser import SunSpecDataParser
 
@@ -51,10 +52,10 @@ class PlantExtractParser(object):
         this_dir, this_filename = os.path.split(__file__)
         xsd_file = os.path.join(this_dir, xsd_dir, xsd_filename)
         self.ped_file = ped_file
-        self.tree = etree.parse(self.ped_file)
-        schema_doc = etree.parse(xsd_file)
-        self.schema = etree.XMLSchema(schema_doc)
-        logging.info("PlantExtract.parse() valid_xml:" + str(self.valid_xml()))
+        self.tree = ET.parse(self.ped_file)
+        #schema_doc = ET.parse(xsd_file)
+        #self.schema = ET.XMLSchema(schema_doc)
+        #logging.info("PlantExtract.parse() valid_xml:" + str(self.valid_xml()))
         # now parse the Plant Extract
         self.envelope = self.tree.getroot()
         if self.envelope is None:
@@ -119,15 +120,15 @@ class PlantExtractParser(object):
         """
         return self.seqId == self.lastSeqId
 
-    def valid_xml(self, assert_=False):
-        """Determines if this Plant Extract is valid XML in compliance with the XSD"""
-        if assert_:
-            self.schema.assert_(self.tree)
-            self.valid = True
-        else:
-            self.valid = self.schema.validate(self.tree)
-
-        return self.valid
+    #def valid_xml(self, assert_=False):
+    #    """Determines if this Plant Extract is valid XML in compliance with the XSD"""
+    #    if assert_:
+    #        self.schema.assert_(self.tree)
+    #        self.valid = True
+    #    else:
+    #        self.valid = self.schema.validate(self.tree)
+    #
+    #    return self.valid
 
     def objectify(self):
         """ Creates and returns a non-parsing Python representation of the Plant
@@ -296,8 +297,8 @@ if __name__ == '__main__':
     sp_parse = sp.add_parser('parse', help="Parse a plant extract document")
     sp_parse.add_argument('--ped', type=file, nargs='+',
                           help='one or more plant extract documents to process - absolute path')
-    sp_parse.add_argument('--xsd', type=file, nargs=1,
-                          help='override the default XML schema document for validation')
+    #sp_parse.add_argument('--xsd', type=file, nargs=1,
+    #                      help='override the default XML schema document for validation')
     sp_parse.add_argument('--novalid', dest='validation', action='store_false',
                           help='do not validate the given plant extract documents')
 
