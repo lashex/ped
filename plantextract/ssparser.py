@@ -18,8 +18,8 @@ import hashlib
 import os
 import logging
 
-from smdx import SMDX
-from smdx import SMDXPoint as SP
+from smdx_old import SMDX
+from smdx_old import SMDXPoint as SP
 
 
 # logger = logging.getLogger('ped.ssd')
