@@ -19,10 +19,6 @@ import logging
 import datetime as dt
 import json
 
-from sunspec import SunSpecData
-
-# TODO move all parsing out into PlantParser, LocationParser, etc... which will
-# TODO clean up the core objects.
 
 time_format = '%Y-%m-%dT%H:%M:%SZ'
 logger = logging.getLogger('ped')
@@ -116,7 +112,6 @@ class Plant(object):
 
 class PropertyContainer(object):
     def __init__(self, props):
-        #self.properties = defaultdict(list)
         self.properties = {}
         for p in props:
             self.properties[p.prop_id] = p

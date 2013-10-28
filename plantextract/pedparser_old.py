@@ -22,7 +22,6 @@ import datetime as dt
 #from lxml import etree
 import xml.etree.ElementTree as ET
 from ped import PlantExtract, Plant
-import plant_extract
 from ssparser import SunSpecDataParser
 
 # TODO get these Parser classes flatter and dumping non-Parser objects
@@ -40,30 +39,120 @@ class PlantExtractParser(object):
         interaction with information from each of the standard blocks.
     """
 
+    element_name = "sunSpecPlantExtract"
+
     def __init__(self):
         logging.debug("PlantExtract.__init__()")
         self.xml = None
-        self.ped = None
 
     def parse(self, ped_file):
         """Parse the plant extract document (minus sunSpecData)"""
-        self.ped = plant_extract.CreateFromDocument(open(ped_file).read(),
-                                                    location_base=ped_file)
+        logging.debug("PlantExtract.parse()")
+        # open file and validate
+        this_dir, this_filename = os.path.split(__file__)
+        xsd_file = os.path.join(this_dir, xsd_dir, xsd_filename)
+        self.ped_file = ped_file
+        self.tree = ET.parse(self.ped_file)
+        #schema_doc = ET.parse(xsd_file)
+        #self.schema = ET.XMLSchema(schema_doc)
+        #logging.info("PlantExtract.parse() valid_xml:" + str(self.valid_xml()))
+        # now parse the Plant Extract
+        self.envelope = self.tree.getroot()
+        if self.envelope is None:
+            raise PlantExtractException("sunSpecPlantExtract root not found.")
 
+        logging.debug("PlantExtract.parse()")
+        env = self.envelope
+        time = env.get('t')
+        if time is None:
+            raise PlantExtractException("sunSpecPlantExtract root node 't' attribute is required.")
+        else:
+            # Plant Extract t="YYYY-MM-DDThh:mm:ssZ"
+            self.time = dt.datetime.strptime(time, time_format)
+
+        # check for sunSpecPlantExtract version, assume '2' if absent
+        v = env.get('v')
+        if v is not None:
+            self.version = int(v)
+        else:
+            self.version = '2'
+
+        # check for sunSpecPlantExtract seqId, assume '1' if absent
+        sid = env.get('seqId')
+        if sid is not None:
+            int(sid)
+            self.seqId = sid
+        else:
+            self.seqId = '1'
+
+        # check for sunSpecPlantExtract lastSeqId, assume '1' if absent
+        lid = env.get('lastSeqId')
+        if lid is not None:
+            int(lid)
+            self.lastSeqId = lid
+        else:
+            self.lastSeqId = '1'
+
+        if int(self.seqId) > int(self.lastSeqId):
+            raise PlantExtractException("seqId can't be larger than the lastSeqId")
+
+        self.plant = PlantParser().parse(self.envelope.find(PlantParser.element_name))
+        self.sunspec_data = SunSpecDataParser().parse_block(
+            self.envelope.find(SunSpecDataParser.element_name)
+        )
         # TODO: sunSpecMetadata
         # TODO: strings
         # TODO: extract extensions
         return
 
+    def parse_data(self):
+        """Parse the sunSpecData block's Points"""
+        if self.sunspec_data.exists and not self.sunspec_data.parsed:
+            self.sunspec_data.parse_points()
+
     def __str__(self):
         """Produces a string representation of the Plant Extract envelope"""
-        return ''.join(['PlantExtract v:', str(self.ped.v), ' t:', str(self.ped.t),
-                        ' seqId:', str(self.ped.seqId), ' lastSeqId:', str(self.ped.lastSeqId)])
+        return ''.join(['PlantExtract v:', str(self.version), ' t:', str(self.time),
+                        ' seqId:', str(self.seqId), ' lastSeqId:', str(self.lastSeqId)])
 
     def last(self):
         """Determines if this Plant Extract is the last extract in a set
         """
-        return self.ped.seqId == self.ped.lastSeqId
+        return self.seqId == self.lastSeqId
+
+    #def valid_xml(self, assert_=False):
+    #    """Determines if this Plant Extract is valid XML in compliance with the XSD"""
+    #    if assert_:
+    #        self.schema.assert_(self.tree)
+    #        self.valid = True
+    #    else:
+    #        self.valid = self.schema.validate(self.tree)
+    #
+    #    return self.valid
+
+    def objectify(self):
+        """ Creates and returns a non-parsing Python representation of the Plant
+            Extract Document.
+        """
+        ped = PlantExtract(self.plant.objectify(), self.seqId, self.lastSeqId)
+        ped.time = self.time
+        return ped
+
+
+    # @classmethod
+    # def is_ped(cls, ped_file):
+    #     """Convenience method to determine if the given file is a Plant Extract
+    #     """
+    #     is_ped_file = False
+    #     try:
+    #         ped = PlantExtract()
+    #         ped.parse(ped_file)
+    #         is_ped_file = True
+    #     except PlantExtractException, pexe:
+    #         is_ped_file = False
+    #         logging.exception("PlantExtract.is_ped() PlantExtractException: %s", pexe)
+    #     finally:
+    #         return is_ped_file
 
 
 class PlantParser(object):
