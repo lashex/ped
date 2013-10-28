@@ -52,11 +52,11 @@ class PedObjectTest(PedTest):
 
 class PlantExtractParserTestCase(PedTest):
     def test_parse(self):
-        ped = pedparser.PlantExtractParser()
+        parser = pedparser.PlantExtractParser()
         this_dir, this_filename = os.path.split(__file__)
         ped_file = os.path.join(this_dir, 'examples', 'ped-large.xml')
-        ped.parse(ped_file=ped_file)
-        print ped
+        parser.parse(ped_file=ped_file)
+        self.assertEqual("Beach City", parser.ped.plant.location.city)
 
 
 def suite():
