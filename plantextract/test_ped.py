@@ -5,6 +5,7 @@ import os
 from ped import PlantExtract, Plant, Location
 from ped import NamePlate, Property, DesignElements
 from ped import Array, Equipment
+from pedparser import ModelIDValues, PointIDValues
 import pedparser
 
 class PedTest(unittest.TestCase):
@@ -57,17 +58,17 @@ class PlantExtractParserTestCase(PedTest):
         parser = pedparser.PlantExtractParser()
         parser.parse(ped_file=ped_file)
         self.assertEqual("Beach City", parser.ped.plant.location.city)
-        ssd = parser.ped.sunSpecData
-        for device in ssd.d:
-            for model in device.m:
-                if model.id is '1':
-                    for point in model.p:
-                        if point.id is 'Mn':
-                            self.assertEqual('Amalgamated Industries',
-                                             point.value())
-                        elif point.id is 'Md':
-                            self.assertEqual('Composite SuperDevice',
-                                             point.value())
+
+        points = parser.match_model_points(
+            model_id=ModelIDValues.COMMON,
+            point_ids=[PointIDValues.MANUFACTURER,
+                       PointIDValues.MODEL]
+        )
+        for point in points:
+            if point.id is 'Mn':
+                self.assertEqual('Amalgamated Industries', point.value())
+            elif point.id is 'Md':
+                self.assertEqual('Composite SuperDevice', point.value())
 
     def test_moxa_parse(self):
         this_dir, this_filename = os.path.split(__file__)
@@ -84,6 +85,28 @@ class PlantExtractParserTestCase(PedTest):
                 self.assertEqual(272.571, property.value())
             elif property.id is 'installedPanelArea':
                 self.assertEqual(2198, property.value())
+
+    def test_kitchen_sink(self):
+        this_dir, this_filename = os.path.split(__file__)
+        ped_file = os.path.join(this_dir, 'examples', 'ped-kitchen-sink.xml')
+        parser = pedparser.PlantExtractParser()
+        parser.parse(ped_file=ped_file)
+        points = parser.match_model_points(
+            model_id=ModelIDValues.INVERTER_SINGLE_PHASE,
+            point_ids=[PointIDValues.ENERGY]
+        )
+        self.assertEqual(1, len(points))
+
+    def test_huge_extract(self):
+        this_dir, this_filename = os.path.split(__file__)
+        ped_file = os.path.join(this_dir, 'examples', 'huge_extract.xml')
+        parser = pedparser.PlantExtractParser()
+        parser.parse(ped_file=ped_file)
+        points = parser.match_model_points(
+            model_id=ModelIDValues.INVERTER_SINGLE_PHASE,
+            point_ids=[PointIDValues.ENERGY]
+        )
+        self.assertEqual(5740, len(points))
 
 def suite():
     suite = unittest.TestSuite()
