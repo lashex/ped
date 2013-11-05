@@ -32,7 +32,6 @@ class PlantExtractParser(object):
 
     def __init__(self):
         logging.debug("PlantExtract.__init__()")
-        self.xml = None
         self.ped = None
 
     def parse(self, ped_file):
@@ -50,7 +49,6 @@ class PlantExtractParser(object):
         """Produces a string representation of the Plant Extract envelope"""
         return ''.join(['PlantExtract v:', str(self.ped.v), ' t:', str(self.ped.t),
                         ' seqId:', str(self.ped.seqId), ' lastSeqId:', str(self.ped.lastSeqId)])
-
 
     def _matching_points(self, models, model_id, device_time, point_ids = None):
         """Get a list of sunSpecData Points which match the given point_ids.
@@ -83,7 +81,6 @@ class PlantExtractParser(object):
                                     p.t = device_time
                                 points.extend([p])
         return points
-
 
     def composite_points(self, model_id, man, mod, sn, point_ids):
         points = list()
@@ -295,3 +292,21 @@ class PointIDValues(object):
     INT32 = 'int32'
     ACC16 = 'acc16'
     ACC32 = 'acc32'
+
+    # TODO utility method to convert list of Points to have SMDX types
+    #@classmethod
+    #def spec_points(self, points):
+    #    """Convert given list of Points to have SunSpec SMDX compliant types.
+    #    :param points: the list of Points to process
+    #    :return points: Points with their type now compliant with SunSpec SMDX
+    #    """
+    #    logging.info("Point.spec_points() id:", self.id, " type:", self._type)
+    #    for point in points:
+    #        if (point. == PointIDValues.UINT16 or
+    #            self._type == PointIDValues.INT16
+    #            or self._type == SP.INT32 or self._type == SP.ACC16
+    #            or self._type == SP.ACC32):
+    #            self.value = int(self.value)  # Convert into 32 bit signed
+    #        elif self._type == SP.FLOAT32:
+    #            self.value = float(self.value)   # Convert into 64 bit float
+
