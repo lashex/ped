@@ -96,17 +96,35 @@ class PlantExtractParserTestCase(PedTest):
             point_ids=[PointIDValues.ENERGY]
         )
         self.assertEqual(1, len(points))
+        print('Retrieved point:', points[0].id, points[0].value())
+        self.assertEqual(0, int(points[0].sf))
+        self.assertEqual(32831050, int(points[0].value()))
 
-    def test_huge_extract(self):
-        this_dir, this_filename = os.path.split(__file__)
-        ped_file = os.path.join(this_dir, 'examples', 'huge_extract.xml')
-        parser = pedparser.PlantExtractParser()
-        parser.parse(ped_file=ped_file)
         points = parser.match_model_points(
             model_id=ModelIDValues.INVERTER_SINGLE_PHASE,
-            point_ids=[PointIDValues.ENERGY]
+            logger_id='11:22:33:44:55:66',
+            point_ids=[PointIDValues.ENERGY, PointIDValues.POWER]
         )
-        self.assertEqual(5740, len(points))
+        self.assertEqual(2, len(points))
+
+        points = parser.match_model_points(
+            model_id=ModelIDValues.ENV_BOM_TEMPERATURE,
+            man='gsc', mod='r800', sn='atmp-12200',
+            point_ids=[PointIDValues.BOM_TEMPERATURE]
+        )
+        self.assertEqual(5, len(points))
+        self.assertEqual('2012-09-12T14:16:33Z', points[0].t)
+
+    #def test_huge_extract(self):
+    #    this_dir, this_filename = os.path.split(__file__)
+    #    ped_file = os.path.join(this_dir, 'examples', 'huge_extract.xml')
+    #    parser = pedparser.PlantExtractParser()
+    #    parser.parse(ped_file=ped_file)
+    #    points = parser.match_model_points(
+    #        model_id=ModelIDValues.INVERTER_SINGLE_PHASE,
+    #        point_ids=[PointIDValues.ENERGY]
+    #    )
+    #    self.assertEqual(5740, len(points))
 
 def suite():
     suite = unittest.TestSuite()

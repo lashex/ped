@@ -86,7 +86,7 @@ class PlantExtractParser(object):
 
 
     def composite_points(self, model_id, man, mod, sn, point_ids):
-        points = None
+        points = list()
         for dr in self.ped.sunSpecData.d:
             if dr.man == man and dr.mod == mod and dr.sn == sn:
                 plist = self._matching_points(dr.m, model_id, device_time=dr.t,
@@ -96,7 +96,7 @@ class PlantExtractParser(object):
         return points
 
     def logger_points(self, model_id, logger_id, point_ids):
-        points = None
+        points = list()
         for dr in self.ped.sunSpecData.d:
             if dr.lid == logger_id:
                 plist = self._matching_points(dr.m, model_id, device_time=dr.t,
@@ -106,7 +106,7 @@ class PlantExtractParser(object):
         return points
 
     def device_points(self, model_id, device_id, point_ids):
-        points = None
+        points = list()
         for dr in self.ped.sunSpecData.d:
             if dr.id == device_id:
                 plist = self._matching_points(dr.m, model_id, device_time=dr.t,
@@ -168,28 +168,28 @@ class PlantExtractParser(object):
         filter_by_id = None
         if device_id is None:
             if man is not None and mod is not None and sn is not None:
-                logging.debug(''.join(['match_model_points composite id',
+                logging.debug(''.join(['match_model_points composite id:',
                               man, mod, sn]))
                 points = self.composite_points(model_id=model_id, man=man,
                                                mod=mod, sn=sn,
                                                point_ids=point_ids)
                 return points
             elif logger_id is not None:
-                logging.debug(''.join(['match_model_points logger_id',
+                logging.debug(''.join(['match_model_points logger_id:',
                               logger_id]))
                 points = self.logger_points(model_id=model_id,
                                             logger_id=logger_id,
                                             point_ids=point_ids)
                 return points
         else:
-            logging.debug(''.join(['match_model_points device_id',
+            logging.debug(''.join(['match_model_points device_id:',
                                    device_id]))
             points = self.device_points(model_id=model_id,
                                           device_id=device_id,
                                           point_ids=point_ids)
             return points
 
-        logging.debug(''.join(['match_model_points model_id',
+        logging.debug(''.join(['match_model_points model_id:',
                                model_id]))
         return self.model_points(model_id = model_id, point_ids=point_ids)
 
@@ -287,6 +287,7 @@ class PointIDValues(object):
     GLOBAL_HORIZONTAL_IRRADIANCE = 'GHI'
     PLANE_OF_ARRAY_IRRADIANCE = 'POAI'
     DIFFUSE_IRRADIANCE = 'DFI'
+    BOM_TEMPERATURE = 'TmpBOM'
 
     FLOAT32 = 'float32'
     INT16 = 'int16'
