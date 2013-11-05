@@ -13,17 +13,12 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-from uuid import UUID
-from uuid import uuid4
+import uuid
 from collections import defaultdict
 import logging
 import datetime as dt
 import json
 
-from sunspec import SunSpecData
-
-# TODO move all parsing out into PlantParser, LocationParser, etc... which will
-# TODO clean up the core objects.
 
 time_format = '%Y-%m-%dT%H:%M:%SZ'
 logger = logging.getLogger('ped')
@@ -88,7 +83,7 @@ class Plant(object):
         :return:
         """
         self.version = 2
-        self.plant_id = plant_id
+        self.plant_id = uuid.UUID(plant_id).hex
         self.locale = locale
         self.name = name
         self.notes = notes
@@ -117,7 +112,6 @@ class Plant(object):
 
 class PropertyContainer(object):
     def __init__(self, props):
-        #self.properties = defaultdict(list)
         self.properties = {}
         for p in props:
             self.properties[p.prop_id] = p
@@ -266,7 +260,7 @@ if __name__ == '__main__':
     else:
         ped = PlantExtract(
             Plant(
-                uuid4().urn,
+                uuid.uuid4().urn,
                 activation_date="2013-03-02",
                 location=Location(latitude=1.1, longitude=2.2,
                                          city="Redwood City",

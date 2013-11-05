@@ -13,20 +13,12 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-from uuid import UUID
-from collections import defaultdict
-import os
-import logging
+from operator import attrgetter
 import datetime as dt
+import logging
+import plant_extract_pyxb
 
-from lxml import etree
-from ped import PlantExtract, Plant
-from ssparser import SunSpecDataParser
 
-# TODO get these Parser classes flatter and dumping non-Parser objects
-
-xsd_filename = "sunspec_plant_extract.xsd"
-xsd_dir = "xsd"
 time_format = '%Y-%m-%dT%H:%M:%SZ'
 #   logger = logging.getLogger('ped') f =
 #   logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s') sh =
@@ -38,305 +30,283 @@ class PlantExtractParser(object):
         interaction with information from each of the standard blocks.
     """
 
-    element_name = "sunSpecPlantExtract"
-
     def __init__(self):
         logging.debug("PlantExtract.__init__()")
-        self.xml = None
+        self.ped = None
 
     def parse(self, ped_file):
-        """Parse the plant extract document (minus sunSpecData)"""
-        logging.debug("PlantExtract.parse()")
-        # open file and validate
-        this_dir, this_filename = os.path.split(__file__)
-        xsd_file = os.path.join(this_dir, xsd_dir, xsd_filename)
-        self.ped_file = ped_file
-        self.tree = etree.parse(self.ped_file)
-        schema_doc = etree.parse(xsd_file)
-        self.schema = etree.XMLSchema(schema_doc)
-        logging.info("PlantExtract.parse() valid_xml:" + str(self.valid_xml()))
-        # now parse the Plant Extract
-        self.envelope = self.tree.getroot()
-        if self.envelope is None:
-            raise PlantExtractException("sunSpecPlantExtract root not found.")
-
-        logging.debug("PlantExtract.parse()")
-        env = self.envelope
-        time = env.get('t')
-        if time is None:
-            raise PlantExtractException("sunSpecPlantExtract root node 't' attribute is required.")
-        else:
-            # Plant Extract t="YYYY-MM-DDThh:mm:ssZ"
-            self.time = dt.datetime.strptime(time, time_format)
-
-        # check for sunSpecPlantExtract version, assume '2' if absent
-        v = env.get('v')
-        if v is not None:
-            self.version = int(v)
-        else:
-            self.version = '2'
-
-        # check for sunSpecPlantExtract seqId, assume '1' if absent
-        sid = env.get('seqId')
-        if sid is not None:
-            int(sid)
-            self.seqId = sid
-        else:
-            self.seqId = '1'
-
-        # check for sunSpecPlantExtract lastSeqId, assume '1' if absent
-        lid = env.get('lastSeqId')
-        if lid is not None:
-            int(lid)
-            self.lastSeqId = lid
-        else:
-            self.lastSeqId = '1'
-
-        if int(self.seqId) > int(self.lastSeqId):
-            raise PlantExtractException("seqId can't be larger than the lastSeqId")
-
-        self.plant = PlantParser().parse(self.envelope.find(PlantParser.element_name))
-        self.sunspec_data = SunSpecDataParser().parse_block(
-            self.envelope.find(SunSpecDataParser.element_name)
+        """Parse the plant extract document"""
+        self.ped = plant_extract_pyxb.CreateFromDocument(
+            open(ped_file).read(), location_base=ped_file
         )
+
         # TODO: sunSpecMetadata
         # TODO: strings
         # TODO: extract extensions
         return
 
-    def parse_data(self):
-        """Parse the sunSpecData block's Points"""
-        if self.sunspec_data.exists and not self.sunspec_data.parsed:
-            self.sunspec_data.parse_points()
-
     def __str__(self):
         """Produces a string representation of the Plant Extract envelope"""
-        return ''.join(['PlantExtract v:', str(self.version), ' t:', str(self.time),
-                        ' seqId:', str(self.seqId), ' lastSeqId:', str(self.lastSeqId)])
+        return ''.join(['PlantExtract v:', str(self.ped.v), ' t:', str(self.ped.t),
+                        ' seqId:', str(self.ped.seqId), ' lastSeqId:', str(self.ped.lastSeqId)])
+
+    def _matching_points(self, models, model_id, device_time, point_ids = None):
+        """Get a list of sunSpecData Points which match the given point_ids.
+
+        @param models: the Models from which to obtain matched Points
+        @param model_id: the model_id of the Model to match Points
+        @param device_time:
+        @param point_ids: the Point ID list of Points to be retrieved.
+        If 'None' then ALL Points on the Model are returned.
+        @return matched_points: the matched points
+        """
+        points = list()
+        if models is not None:
+            for m in models:
+                if m.id == model_id:
+                    if point_ids is None:
+                        # just add all points on the Model
+                        logging.debug('_matching_points() adding all Points')
+                        points.extend(m.p)
+                    else:
+                        for p in m.p:
+                            logging.debug(''.join(["_matching_points() p.id:", p.id,
+                                                   " given point_id:", str(point_ids)]))
+                            if p.id in point_ids:
+                                logging.debug(''.join(['_matching_points() found p.id:',
+                                                       p.id]))
+                                if p.t is None:
+                                    # if Point time value 't' is None then inherit
+                                    # device's time
+                                    p.t = device_time
+                                points.extend([p])
+        return points
+
+    def composite_points(self, model_id, man, mod, sn, point_ids):
+        points = list()
+        for dr in self.ped.sunSpecData.d:
+            if dr.man == man and dr.mod == mod and dr.sn == sn:
+                plist = self._matching_points(dr.m, model_id, device_time=dr.t,
+                                              point_ids=point_ids)
+                points.extend(plist)
+
+        return points
+
+    def logger_points(self, model_id, logger_id, point_ids):
+        points = list()
+        for dr in self.ped.sunSpecData.d:
+            if dr.lid == logger_id:
+                plist = self._matching_points(dr.m, model_id, device_time=dr.t,
+                                              point_ids=point_ids)
+                points.extend(plist)
+
+        return points
+
+    def device_points(self, model_id, device_id, point_ids):
+        points = list()
+        for dr in self.ped.sunSpecData.d:
+            if dr.id == device_id:
+                plist = self._matching_points(dr.m, model_id, device_time=dr.t,
+                                              point_ids=point_ids)
+                points.extend(plist)
+
+        return points
+
+    def model_points(self, model_id, point_ids):
+        points = list()
+        for dr in self.ped.sunSpecData.d:
+            plist = self._matching_points(dr.m, model_id, device_time=dr.t,
+                                          point_ids=point_ids)
+            points.extend(plist)
+
+        return points
 
     def last(self):
         """Determines if this Plant Extract is the last extract in a set
         """
-        return self.seqId == self.lastSeqId
+        return self.ped.seqId == self.ped.lastSeqId
 
-    def valid_xml(self, assert_=False):
-        """Determines if this Plant Extract is valid XML in compliance with the XSD"""
-        if assert_:
-            self.schema.assert_(self.tree)
-            self.valid = True
-        else:
-            self.valid = self.schema.validate(self.tree)
+    def match_model_points(self, model_id, device_id=None, logger_id=None,
+                           man=None, mod=None, sn=None, point_ids=None):
+        """Get matched points for the given model_id.
 
-        return self.valid
+        Additional parameter matching precedence is as follows:
+          # device_id if present
+          # man/mod/sn composite id if all present
+          # logger_id if present
+        Then if the Device matches the additional parameter precedence filter,
+        model_id of any contained Models is checked. Finally the point_ids will
+        act as a filter for any Points retrieved from the matching Model.
+        @note If a matched Point did not have a timestamp the timestamp is
+        inherited from the Device.
 
-    def objectify(self):
-        """ Creates and returns a non-parsing Python representation of the Plant
-            Extract Document.
+        @param model_id: the model ID from which to retrieve the Points
+        @param device_id: the optional logger-defined Device ID. If the device
+        ID is present, only Points from the model_id *and* device_id will be
+        returned the man/mod/sn combination and logger_id will be ignored.
+        @param man: the manufacturer of the device, used in the man/mod/sn
+        composite Device ID
+        @param mod: the model of the device, used in the man/mod/sn composite
+        Device ID
+        @param sn: the serial number of the device, used in the man/mod/sn
+        composite Device ID
+        @param logger_id: the optional logger ID of the Device. If the logger ID
+        is present, only Points from the matching model_id *and* logger_id will
+        be returned.
+        @param point_ids: the optional Point ID list of Points to be retrieved.
+        @return matched_points: the matched points
         """
-        ped = PlantExtract(self.plant.objectify(), self.seqId, self.lastSeqId)
-        ped.time = self.time
-        return ped
-
-
-    # @classmethod
-    # def is_ped(cls, ped_file):
-    #     """Convenience method to determine if the given file is a Plant Extract
-    #     """
-    #     is_ped_file = False
-    #     try:
-    #         ped = PlantExtract()
-    #         ped.parse(ped_file)
-    #         is_ped_file = True
-    #     except PlantExtractException, pexe:
-    #         is_ped_file = False
-    #         logging.exception("PlantExtract.is_ped() PlantExtractException: %s", pexe)
-    #     finally:
-    #         return is_ped_file
-
-
-class PlantParser(object):
-    element_name = 'plant'
-
-    def __init__(self):
-        logging.debug("Plant.__init__()")
-
-    def parse(self, element):
-        self.element = pe = element
-        if pe is None:
-            raise PlantExtractException("plant element not found")
-
-        plant_id = pe.get('id')
-        if plant_id is None:
-            raise PlantExtractException("plant 'id' attribute is required.")
+        if model_id is None:
+            return  # should throw exception
         else:
-            self.id = UUID(plant_id)
+            model_id = str(model_id)
 
-        v = pe.get('v')
-        if v is not None:
-            self.version = int(v)
+        points = None
+        filter_by_id = None
+        if device_id is None:
+            if man is not None and mod is not None and sn is not None:
+                logging.debug(''.join(['match_model_points composite id:',
+                              man, mod, sn]))
+                points = self.composite_points(model_id=model_id, man=man,
+                                               mod=mod, sn=sn,
+                                               point_ids=point_ids)
+                return points
+            elif logger_id is not None:
+                logging.debug(''.join(['match_model_points logger_id:',
+                              logger_id]))
+                points = self.logger_points(model_id=model_id,
+                                            logger_id=logger_id,
+                                            point_ids=point_ids)
+                return points
+        else:
+            logging.debug(''.join(['match_model_points device_id:',
+                                   device_id]))
+            points = self.device_points(model_id=model_id,
+                                          device_id=device_id,
+                                          point_ids=point_ids)
+            return points
 
-        self.locale = pe.get('locale')
-        self.name = get_node_value(pe, 'name')
-        self.description = get_node_value(pe, 'description')
-        self.notes = get_node_value(pe, 'notes')
-        ad = get_node_value(pe, 'activationDate')
-        if ad is not None:
-            self.activation_date = dt.datetime.strptime(ad, '%Y-%m-%d')
-
-        self.location = LocationParser(pe.find(LocationParser.element_name))
-        self.name_plate = NamePlateParser(pe.find(NamePlateParser.element_name))
-        self.capabilities = CapabilitiesParser(pe.find(CapabilitiesParser.element_name))
-        self.participants = list()
-        for participant in self.element.iter(Participant.element_name):
-            self.participants.append(Participant(participant))
-
-    def tostring(self):
-        """Produces a string representation of some parsed Plant values """
-        return ''.join(["Plant id:", self.id.hex, ", v:", str(self.version),
-                        ", name:", self.name, ", locale:", self.locale,
-                        ", description:", self.description])
-
-
-class PropertyContainerParser(object):
-    def __init__(self, my_element):
-        self.properties = defaultdict(list)
-        self.element = my_element
-        if self.element is not None:
-            for prop in self.element.iter(PropertyParser.element_name):
-                prop_id = prop.get('id')
-                prop_type = prop.get('type')
-                self.properties[prop_id].append(PropertyParser(prop_id, prop_type,
-                                                         prop.text))
+        logging.debug(''.join(['match_model_points model_id:',
+                               model_id]))
+        return self.model_points(model_id = model_id, point_ids=point_ids)
 
 
-class PropertyParser(object):
-    element_name = 'property'
+    def points_in_period(self, start_time, end_time, model_id, device_id=None,
+                         logger_id=None, man=None, mod=None, sn=None,
+                         point_ids=None):
+        """ Get a Point.time sorted list of points that are between the start_time
+            and end_time and that match the given criteria.
 
-    def __init__(self, prop_id, prop_type, text):
-        self.id = prop_id
-        self.type = prop_type
-        self.text = text
+            If both start_time and end_time are None, then points for the
+            sunSpecData block's entire time range is returned.
+            @see get_matched_points_for_model for parameter matching precedence.
 
+            @requires start_time: the datetime describing the beginning of the period
+            @requires end_time: the datetime describing the end of the period
+            @requires model_id: the model ID from which to retrieve the Points
+            @param device_id: the optional logger-defined Device ID. If the device
+            ID is present, only Points from the model_id *and* device_id will be
+            returned the man/mod/sn combination and logger_id will be ignored.
+            @param man: the manufacturer of the device, used in the man/mod/sn
+            composite Device ID
+            @param mod: the model of the device, used in the man/mod/sn composite
+            Device ID
+            @param sn: the serial number of the device, used in the man/mod/sn
+            composite Device ID
+            @param logger_id: the optional logger ID of the Device. If the logger ID
+            is present, only Points from the matching model_id *and* logger_id will
+            be returned.
+            @param point_ids: the optional Point ID list of Points to be retrieved.
 
-class LocationParser(PropertyContainerParser):
-    element_name = 'location'
+            @return period_points: points within the period as time sorted
+            Points in a list
+        """
+        logging.info("points_in_period: "+str(start_time)+" > "+str(end_time))
 
-    def __init__(self, location_element):
-        super(LocationParser, self).__init__(location_element)
+        points = list()
+        points.extend(self.match_model_points(model_id, device_id=device_id,
+                                              logger_id=logger_id,
+                                              man=man, mod=mod, sn=sn,
+                                              point_ids=point_ids))
 
-    def parse(self):
-        le = self.element
-        self.latitude = get_node_value(le, 'latitude')
-        self.longitude = get_node_value(le, 'longitude')
-        self.line1 = get_node_value(le, 'line1')
-        self.line2 = get_node_value(le, 'line2')
-        self.city = get_node_value(le, 'city')
-        self.stateProvince = get_node_value(le, 'stateProvince')
-        self.country = get_node_value(le, 'country')
-        self.postal = get_node_value(le, 'postal')
-        self.elevation = get_node_value(le, 'elevation')
-        self.timezone = get_node_value(le, 'timezone')
+        period_points = list()
+        if end_time is None and start_time is None:
+            period_points.extend(points)
+        else:
+            if end_time is None:
+                # if end_time is None then treat that as implying "now"
+                et = dt.datetime.utcnow()
+            else:
+                et = dt.datetime.strptime(end_time, time_format)
 
+            if start_time is None:
+                st = dt.datetime.MINYEAR
+            else:
+                st = dt.datetime.strptime(start_time, time_format)
 
-class NamePlateParser(PropertyContainerParser):
-    element_name = 'namePlate'
+            for p in points:
+                pt = dt.datetime.strptime(p.t.value(), time_format)
+                if st < pt < et:
+                    period_points.extend(p)
 
-    def __init__(self, nameplate_element):
-        super(NamePlateParser, self).__init__(nameplate_element)
-
-
-class CapabilitiesParser(PropertyContainerParser):
-    element_name = 'capabilities'
-
-    def __init__(self, capabilities_element):
-        super(CapabilitiesParser, self).__init__(capabilities_element)
-        print self.properties
-
-
-class Participant(PropertyContainerParser):
-    element_name = 'participant'
-
-    def __init__(self, participant_element):
-        super(Participant, self).__init__(participant_element)
-        self.type = get_node_value(self.element, 'type')
-
-
-class PlantExtractException(Exception):
-    pass
-
-
-#####################
-#   Utility functions
-def get_node_value(node, node_name):
-    node_value = None
-
-    if node is None:
-        return None
-    elif node.find(node_name) is not None:
-        node_value = node.find(node_name).text
-
-    return node_value
-
-########################
-#   command line parsing
-if __name__ == '__main__':
-    import argparse
+        logging.info('points_in_period point count: '+str(len(period_points)))
+        period_points = sorted(period_points, key=attrgetter('t'))
+        return period_points
 
 
-    parser = argparse.ArgumentParser(description='Process or create Plant Extract Documents')
-    parser.add_argument('--log', dest='loglevel', default='WARNING',
-                        help='set the log level (default:WARNING)')
-    parser.add_argument('--test', dest='activate_tests', action='store_true',
-                        help='activate doctests for the Plant Extract class')
-    sp = parser.add_subparsers()
+class ModelIDValues(object):
+    # list of convenient model id values
+    # Common block Model IDs
+    COMMON = 1
+    AGGREGATOR = 2
 
-    sp_create = sp.add_parser('create',
-                              help="Create a plant extract document")
+    # Inverter Model IDs
+    INVERTER_SINGLE_PHASE = 101
+    INVERTER_SPLIT_PHASE = 102
+    INVERTER_THREE_PHASE = 103
 
-    sp_parse = sp.add_parser('parse', help="Parse a plant extract document")
-    sp_parse.add_argument('--ped', type=file, nargs='+',
-                          help='one or more plant extract documents to process - absolute path')
-    sp_parse.add_argument('--xsd', type=file, nargs=1,
-                          help='override the default XML schema document for validation')
-    sp_parse.add_argument('--novalid', dest='validation', action='store_false',
-                          help='do not validate the given plant extract documents')
+    # Meter Model IDs
+    METER_SINGLE_PHASE = 201
 
-    args = parser.parse_args()
-    #   Now for some post parsing output
-    # print args.ped
+    # Environmental Model IDs
+    ENV_IRRADIANCE = 302
+    ENV_BOM_TEMPERATURE = 303
 
-    if args.loglevel is not None:
-        loglevel = args.loglevel.upper()
-        print ">> Setting loglevel to: " + loglevel
-        logging.getLogger().setLevel(loglevel)
+class PointIDValues(object):
+    # list of convenient point ID values
+    MANUFACTURER = 'Mn'
+    MODEL = 'Md'
 
-    if args.activate_tests is True:
-        """ Run some tests on the PlantExtract class
-    >>>   ped = PlantExtract(args.ped[0])
-    print ped.last()
-    >>>   print 'TmpBOM'
-    ps = ped.sunspec_data.get_matching_points('TmpBOM') for p in ps: print
-      p.tostring()
-    >>>   print 'TotWh'
-    ps = ped.sunspec_data.get_matching_points('TotWh') for p in ps: print
-    p.tostring() print "Points in period"
-    #   start_time: 2012-10-28 22:00:59 end_time: 2012-10-28 22:03:00 > 5 or 6
-    #   inclusive
-    start_time = dt.datetime(2012, 10, 28, 22, 00, 00)
-    end_time = dt.datetime(2012, 10, 28, 22, 03, 00)
-    ped.sunspec_data.get_points_in_period(start_time, end_time, 'TotWh')
-    """
-    else:
-        # xsd_full_file = os.path.join(os.getcwd(), xsd_dir, xsd_filename)
-        ped = PlantExtractParser()
-        ped.parse(args.ped[0])
-        print ped
-        print ">> PlantExtract Plant"
-        print ped.plant
-        print ">> PlantExtract parsing sunSpecData"
-        ped.parse_data()
-        print ">> PlantExtract completed parsing of sunSpecData"
-        print ped.sunspec_data  # the sunSpecData block
-        print ped.sunspec_data.device_records[0].models[0].smdx # SMDX info of model
-        print ped.sunspec_data.device_records[0].models[0].points[0] # block structure
+    ENERGY = 'WH'
+    TOTAL_ENERGY_EXPORTED = 'TotWhExp'
+    TOTAL_ENERGY_IMPORTED = 'TotWhImp'
+    POWER = 'W'
+    GLOBAL_HORIZONTAL_IRRADIANCE = 'GHI'
+    PLANE_OF_ARRAY_IRRADIANCE = 'POAI'
+    DIFFUSE_IRRADIANCE = 'DFI'
+    BOM_TEMPERATURE = 'TmpBOM'
+
+    FLOAT32 = 'float32'
+    INT16 = 'int16'
+    UINT16 = 'unint16'
+    INT32 = 'int32'
+    ACC16 = 'acc16'
+    ACC32 = 'acc32'
+
+    # TODO utility method to convert list of Points to have SMDX types
+    #@classmethod
+    #def spec_points(self, points):
+    #    """Convert given list of Points to have SunSpec SMDX compliant types.
+    #    :param points: the list of Points to process
+    #    :return points: Points with their type now compliant with SunSpec SMDX
+    #    """
+    #    logging.info("Point.spec_points() id:", self.id, " type:", self._type)
+    #    for point in points:
+    #        if (point. == PointIDValues.UINT16 or
+    #            self._type == PointIDValues.INT16
+    #            or self._type == SP.INT32 or self._type == SP.ACC16
+    #            or self._type == SP.ACC32):
+    #            self.value = int(self.value)  # Convert into 32 bit signed
+    #        elif self._type == SP.FLOAT32:
+    #            self.value = float(self.value)   # Convert into 64 bit float
 

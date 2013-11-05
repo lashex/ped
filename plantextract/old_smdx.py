@@ -15,8 +15,9 @@
 import os
 import logging
 
-from lxml import etree
-from lxml import objectify
+#from lxml import etree
+import xml.etree.ElementTree as etree
+#from lxml import objectify
 
 
 smdx_dir = "smdx"
@@ -146,9 +147,9 @@ def get_smdx_parser():
         schema_filename = os.path.join(os.getcwd(), xsd_dir, smdx_xsd)
         try:
             schema_etree = etree.parse(schema_filename)
-            schema = etree.XMLSchema(schema_etree)
+            #schema = etree.XMLSchema(schema_etree)
             logging.info("get_smdx_parser() getting a global lxml.objectify SMDX parser")
-            smdx_schema_parser = objectify.makeparser(schema=schema)
+            smdx_schema_parser = objectify.makeparser()
         except IOError:
             logging.error("IOError caught while opening " + schema_filename)
 

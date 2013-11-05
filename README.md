@@ -15,19 +15,43 @@ Typical `parse` usage looks like this::
 
     #!/usr/bin/env python
 
-    from plantextract.pedparser import PlantExtractParser
-    from plantextract.smdx import SMDX
+    from pedparser import ModelIDValues, PointIDValues
+    import plantextract.pedparser
+    ...
 
-    pedp = PlantExtractParser()
-    pedp.parse('ped-cls-to-process') # automatic parsing of envelope
-    pedp.parse_data()    # will parse an included sunSpecData block
-    print pedp.plant     # the Plant block
-    print pedp.plant.name    # the Plant's name attribute
+    this_dir, this_filename = os.path.split(__file__)
+    ped_file = os.path.join(this_dir, 'examples', 'ped-kitchen-sink.xml')
+    parser = pedparser.PlantExtractParser()
+    parser.parse(ped_file=ped_file)
+    parser.ped.plant               # the Plant block
+    parser.ped.plant.name          # the Plant's name attribute
+    parser.ped.plant.location.city # the Plant's location city attribute
+
+    # get ENERGY Points that are from an INVERTER_SINGLE_PHASE Model
+    points = parser.match_model_points(
+        model_id=ModelIDValues.INVERTER_SINGLE_PHASE,
+        point_ids=[PointIDValues.ENERGY]
+    )
+    print('Retrieved point:', points[0].id, points[0].value())
+    print('Point scale factor:', points[0].sf)
+    print('Point value:', points[0].value())  # another way to get Point value
+
+    # get ENERGY Points that are from an INVERTER_SINGLE_PHASE Model, but only
+    # if the Device containing the Model has a logger ID of '11:22:33:44:55:66'
+    points = parser.match_model_points(
+        model_id=ModelIDValues.INVERTER_SINGLE_PHASE,
+        logger_id='11:22:33:44:55:66',
+        point_ids=[PointIDValues.ENERGY, PointIDValues.POWER]
+    )
+    print('Retrieved point:', points[0].id, points[0].value())
     # ...etc...
 
-    print pedp.sunspec_data  # the sunSpecData block
-    print pedp.sunspec_data.device_records[0].models[0].smdx # SMDX info of model
-    print pedp.sunspec_data.device_records[0].models[0].points[0] # block structure
+    # ...or one can directly interact with the sunSpecData block
+    print parser.ped.sunSpecData.d   # the DeviceRecords list in the sunSpecData
+    print parser.ped.sunSpecData.d[0].m # the Models list in the Zero'th Device
+    print parser.ped.sunSpecData.d[0].m[0].p[0].id # the ID of the Zero'th Point
+    # ...etc...
+
 
 Typical `create` usage looks like this:
 
@@ -61,4 +85,4 @@ Typical `create` usage looks like this:
         )
     )
 
-Requires [lxml](http://lxml.de) 3.2.1.
+Requires [PyXB](http://pyxb.sourceforge.net) 1.2.3
