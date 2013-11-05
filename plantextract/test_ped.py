@@ -57,7 +57,7 @@ class PlantExtractParserTestCase(PedTest):
         ped_file = os.path.join(this_dir, 'examples', 'ped-large.xml')
         parser = pedparser.PlantExtractParser()
         parser.parse(ped_file=ped_file)
-        self.assertEqual("Beach City", parser.ped.plant.location.city)
+        self.assertEqual('Beach City', parser.ped.plant.location.city)
 
         points = parser.match_model_points(
             model_id=ModelIDValues.COMMON,
