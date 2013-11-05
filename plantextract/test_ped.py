@@ -115,6 +115,7 @@ class PlantExtractParserTestCase(PedTest):
         self.assertEqual(5, len(points))
         self.assertEqual('2012-09-12T14:16:33Z', points[0].t)
 
+    # commented out because test file is large and test takes ~4mins
     #def test_huge_extract(self):
     #    this_dir, this_filename = os.path.split(__file__)
     #    ped_file = os.path.join(this_dir, 'examples', 'huge_extract.xml')
